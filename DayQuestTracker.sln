@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DayQuestTracker.WebAPI", "DayQuestTracker.WebAPI\DayQuestTracker.WebAPI.csproj", "{2FDAFDEC-0263-47C6-94A9-B265196B9DC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DayQuestTracker.Application", "DayQuesttRACKER.Application\DayQuestTracker.Application.csproj", "{0C8794A6-698A-4C36-9B24-661FC2598B41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DayQuestTracker.Domain", "DayQuestTracker.Domain\DayQuestTracker.Domain.csproj", "{95F99000-89E1-42E4-9E9C-04C1E0980E84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DayQuestTracker.Infrastructure", "DayQuesttRACKER.Infrastructure\DayQuestTracker.Infrastructure.csproj", "{40BF4090-4A71-44AA-81DF-BD473652809F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2FDAFDEC-0263-47C6-94A9-B265196B9DC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FDAFDEC-0263-47C6-94A9-B265196B9DC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FDAFDEC-0263-47C6-94A9-B265196B9DC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FDAFDEC-0263-47C6-94A9-B265196B9DC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C8794A6-698A-4C36-9B24-661FC2598B41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C8794A6-698A-4C36-9B24-661FC2598B41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C8794A6-698A-4C36-9B24-661FC2598B41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C8794A6-698A-4C36-9B24-661FC2598B41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95F99000-89E1-42E4-9E9C-04C1E0980E84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95F99000-89E1-42E4-9E9C-04C1E0980E84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95F99000-89E1-42E4-9E9C-04C1E0980E84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95F99000-89E1-42E4-9E9C-04C1E0980E84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40BF4090-4A71-44AA-81DF-BD473652809F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40BF4090-4A71-44AA-81DF-BD473652809F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40BF4090-4A71-44AA-81DF-BD473652809F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40BF4090-4A71-44AA-81DF-BD473652809F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
