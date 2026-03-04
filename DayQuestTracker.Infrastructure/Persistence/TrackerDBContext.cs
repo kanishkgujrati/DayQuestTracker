@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace DayQuestTracker.Infrastructure.Persistence
 {
-    public class TrackeDBContext : DbContext
+    public class TrackerDBContext : DbContext
     {
-        public TrackeDBContext(DbContextOptions<TrackeDBContext> options)
+        public TrackerDBContext(DbContextOptions<TrackerDBContext> options)
         : base(options) { }
 
         public DbSet<User> Users => Set<User>();
@@ -29,7 +29,7 @@ namespace DayQuestTracker.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
 
             // Auto apply all IEntityTypeConfiguration classes in this assembly
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TrackeDBContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TrackerDBContext).Assembly);
         }
     }
 }
