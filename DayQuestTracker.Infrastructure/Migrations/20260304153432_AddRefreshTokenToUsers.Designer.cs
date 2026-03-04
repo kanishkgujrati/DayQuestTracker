@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DayQuestTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(TrackerDBContext))]
-    [Migration("20260304142428_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260304153432_AddRefreshTokenToUsers")]
+    partial class AddRefreshTokenToUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -308,6 +308,12 @@ namespace DayQuestTracker.Infrastructure.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Timezone")
                         .IsRequired()

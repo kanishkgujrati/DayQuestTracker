@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\DayQuestTracker.Domain\DayQuestTracker.Domain.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Interfaces\" />
-    <Folder Include="Common\Models\" />
-    <Folder Include="Features\" />
+    <ProjectReference Include="..\DayQuestTracker.Domain\DayQuestTracker.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

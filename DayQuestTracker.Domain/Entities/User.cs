@@ -1,9 +1,4 @@
 ﻿using DayQuestTracker.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DayQuestTracker.Domain.Entities
 {
@@ -18,6 +13,10 @@ namespace DayQuestTracker.Domain.Entities
 
         // Computed — never stored in DB
         public int Level => (TotalXP / 500) + 1;
+
+        //Authorization Tokens
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
 
         // Navigation properties
         public ICollection<Category> Categories { get; set; } = new List<Category>();
