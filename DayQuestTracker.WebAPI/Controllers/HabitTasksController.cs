@@ -57,7 +57,7 @@ namespace DayQuestTracker.WebAPI.Controllers
                 : BadRequest(result.Error);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateHabitTaskRequest request)
         {
             var result = await _mediator.Send(new UpdateHabitTaskCommand(
@@ -84,5 +84,5 @@ namespace DayQuestTracker.WebAPI.Controllers
 
     public record CreateHabitTaskRequest(Guid CategoryId,string Title,string? Description,int Difficulty,FrequencyType FrequencyType,int? TargetPerWeek,List<int>? ScheduledDays);
 
-    public record UpdateHabitTaskRequest(Guid CategoryId,string Title,string? Description,int Difficulty,FrequencyType FrequencyType,int? TargetPerWeek,List<int>? ScheduledDays);
+    public record UpdateHabitTaskRequest(Guid? CategoryId,string? Title,string? Description,int? Difficulty,FrequencyType? FrequencyType,int? TargetPerWeek,List<int>? ScheduledDays);
 }

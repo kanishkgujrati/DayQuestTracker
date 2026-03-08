@@ -50,7 +50,7 @@ namespace DayQuestTracker.WebAPI.Controllers
                 : Conflict(result.Error);
         }
 
-        [HttpPut("UpdateCategoryById/{id}")]
+        [HttpPatch("UpdateCategoryById/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCategoryRequest request)
         {
             var result = await _mediator.Send(
@@ -67,5 +67,5 @@ namespace DayQuestTracker.WebAPI.Controllers
         }
     }
     public record CreateCategoryRequest(string Name, string Color, string? Icon);
-    public record UpdateCategoryRequest(string Name, string Color, string? Icon);
+    public record UpdateCategoryRequest(string? Name, string? Color, string? Icon);
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Application.Features.Categories.Commands
 {
-    public record UpdateCategoryCommand(Guid Id,Guid UserId,string Name,string Color,string? Icon) : IRequest<Result<CategoryDto>>;
+    public record UpdateCategoryCommand(Guid Id,Guid UserId,string? Name,string? Color,string? Icon) : IRequest<Result<CategoryDto>>;
 
     public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Result<CategoryDto>>
     {
@@ -28,9 +28,15 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             if (category is null)
                 return Result<CategoryDto>.Failure("Category not found.");
 
-            category.Name = request.Name.Trim();
-            category.Color = request.Color;
-            category.Icon = request.Icon;
+            if (request.Name is not null)
+                category.Name = request.Name.Trim();
+
+            if (request.Color is not null)
+                category.Color = request.Color;
+
+            if (request.Icon is not null)
+                category.Icon = request.Icon;
+            
             category.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);

@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Application.Features.Tasks.Commands
 {
-    public record UpdateHabitTaskCommand(Guid Id,Guid UserId,Guid CategoryId,string Title,string? Description,int Difficulty
-        ,FrequencyType FrequencyType,int? TargetPerWeek,List<int>? ScheduledDays) : IRequest<Result<HabitTaskDto>>;
+    public record UpdateHabitTaskCommand(Guid Id,Guid UserId,Guid? CategoryId,string? Title,string? Description,int? Difficulty
+        ,FrequencyType? FrequencyType,int? TargetPerWeek,List<int>? ScheduledDays) : IRequest<Result<HabitTaskDto>>;
 
     public class UpdateHabitTaskCommandHandler : IRequestHandler<UpdateHabitTaskCommand, Result<HabitTaskDto>>
     {
@@ -33,62 +33,86 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             if (task is null)
                 return Result<HabitTaskDto>.Failure("Task not found.");
 
-            // Validate category belongs to user
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(c => c.Id == request.CategoryId &&
-                                          c.UserId == request.UserId,
-                                     cancellationToken);
-
-            if (category is null)
-                return Result<HabitTaskDto>.Failure("Category not found.");
-
-            if (request.Difficulty < 1 || request.Difficulty > 5)
-                return Result<HabitTaskDto>.Failure("Difficulty must be between 1 and 5.");
-
-            if (request.FrequencyType == FrequencyType.Custom && request.TargetPerWeek is null)
-                return Result<HabitTaskDto>.Failure("TargetPerWeek is required for Custom frequency.");
-
-            // Update task fields
-            task.CategoryId = request.CategoryId;
-            task.Title = request.Title.Trim();
-            task.Description = request.Description;
-            task.Difficulty = request.Difficulty;
-            task.FrequencyType = request.FrequencyType;
-            task.TargetPerWeek = request.FrequencyType == FrequencyType.Custom
-                ? request.TargetPerWeek : null;
-            task.UpdatedAt = DateTime.UtcNow;
-
-            // Replace schedules — delete old, insert new
-            // Why replace instead of update: simpler logic, no diff calculation needed
-            var existingSchedules = task.TaskSchedules.ToList();
-            foreach (var schedule in existingSchedules)
-                _context.TaskSchedules.Remove(schedule);
-
-            if (request.FrequencyType != FrequencyType.Daily && request.ScheduledDays != null)
+            if (request.CategoryId.HasValue)
             {
-                foreach (var day in request.ScheduledDays.Distinct())
-                {
-                    _context.TaskSchedules.Add(new HabitTaskSchedule
-                    {
-                        HabitTaskId = task.Id,
-                        DayOfWeek = day
-                    });
-                }
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Id == request.CategoryId.Value &&
+                                              c.UserId == request.UserId,
+                                         cancellationToken);
+
+                if (category is null)
+                    return Result<HabitTaskDto>.Failure("Category not found.");
+
+                task.CategoryId = request.CategoryId.Value;
             }
 
+            if (request.Title is not null)
+                task.Title = request.Title.Trim();
+
+            if (request.Description is not null)
+                task.Description = request.Description;
+
+            if (request.Difficulty.HasValue)
+            {
+                if (request.Difficulty.Value < 1 || request.Difficulty.Value > 5)
+                    return Result<HabitTaskDto>.Failure("Difficulty must be between 1 and 5.");
+
+                task.Difficulty = request.Difficulty.Value;
+            }
+
+            // FrequencyType change requires re-evaluating schedules
+            if (request.FrequencyType.HasValue)
+            {
+                if (request.FrequencyType.Value == FrequencyType.Custom &&
+                    request.TargetPerWeek is null && task.TargetPerWeek is null)
+                    return Result<HabitTaskDto>.Failure("TargetPerWeek is required for Custom frequency.");
+
+                task.FrequencyType = request.FrequencyType.Value;
+                task.TargetPerWeek = request.FrequencyType.Value == FrequencyType.Custom
+                    ? (request.TargetPerWeek ?? task.TargetPerWeek)
+                    : null;
+            }
+
+            if (request.TargetPerWeek.HasValue)
+                task.TargetPerWeek = request.TargetPerWeek.Value;
+
+            // Only replace schedules if ScheduledDays was explicitly sent
+            if (request.ScheduledDays is not null)
+            {
+                var existingSchedules = task.TaskSchedules.ToList();
+                foreach (var schedule in existingSchedules)
+                    _context.TaskSchedules.Remove(schedule);
+
+                var currentFrequency = request.FrequencyType ?? task.FrequencyType;
+                if (currentFrequency != FrequencyType.Daily)
+                {
+                    foreach (var day in request.ScheduledDays.Distinct())
+                    {
+                        _context.TaskSchedules.Add(new HabitTaskSchedule
+                        {
+                            HabitTaskId = task.Id,
+                            DayOfWeek = day
+                        });
+                    }
+                }
+            }
+            task.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync(cancellationToken);
+
+            var updatedCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Id == task.CategoryId, cancellationToken);
 
             return Result<HabitTaskDto>.Success(new HabitTaskDto
             {
                 Id = task.Id,
                 CategoryId = task.CategoryId,
-                CategoryName = category.Name,
+                CategoryName = updatedCategory?.Name ?? string.Empty,
                 Title = task.Title,
                 Description = task.Description,
                 Difficulty = task.Difficulty,
                 FrequencyType = task.FrequencyType,
                 TargetPerWeek = task.TargetPerWeek,
-                ScheduledDays = request.ScheduledDays ?? new List<int>(),
+                ScheduledDays = task.TaskSchedules.Select(s => s.DayOfWeek).ToList(),
                 XPValue = task.XPValue,
                 CreatedAt = task.CreatedAt
             });
