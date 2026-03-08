@@ -1,9 +1,10 @@
-﻿using DayQuestTracker.Domain.Entities;
+﻿using DayQuestTracker.Application.Common.Interfaces;
+using DayQuestTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Infrastructure.Persistence
 {
-    public class TrackerDBContext : DbContext
+    public class TrackerDBContext : DbContext, ITrackerDbContext
     {
         public TrackerDBContext(DbContextOptions<TrackerDBContext> options)
         : base(options) { }

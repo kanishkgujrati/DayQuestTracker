@@ -1,4 +1,5 @@
 ﻿using DayQuestTracker.Application.Common.Interfaces;
+using DayQuestTracker.Infrastructure.Persistence;
 using DayQuestTracker.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,9 @@ namespace DayQuestTracker.Infrastructure
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthTokenGeneratorService, AuthTokenGenratorService>();
+
+            services.AddScoped<ITrackerDbContext>(
+                provider => provider.GetRequiredService<TrackerDBContext>());
 
             return services;
         }
