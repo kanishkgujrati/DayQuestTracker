@@ -10,8 +10,8 @@ namespace DayQuestTracker.Domain.Entities
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int Difficulty { get; set; } = 1;
-        public FrequencyType FrequencyType { get; set; }
-        public int? TargetPerWeek { get; set; }
+        public FrequencyType FrequencyType { get; set; }   // ENUM: Daily / Weekly / Custom
+        public int? TargetPerWeek { get; set; }            // INT, nullable (only populated when FrequencyType = Custom)
 
         // Computed XP value for this task
         public int XPValue => FrequencyType switch

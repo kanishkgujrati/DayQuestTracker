@@ -7,6 +7,6 @@
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeletedAt { get; set; }
 
-        public bool IsDeleted => DeletedAt.HasValue;
+        public bool IsDeleted => DeletedAt.HasValue;  // True if DeletedAt = !NULL 
     }
 }

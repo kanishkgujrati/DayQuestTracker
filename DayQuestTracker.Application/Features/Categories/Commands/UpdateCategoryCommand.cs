@@ -29,14 +29,33 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
                 return Result<CategoryDto>.Failure("Category not found.");
 
             if (request.Name is not null)
+            {
+                if (string.IsNullOrWhiteSpace(request.Name))
+                    return Result<CategoryDto>.Failure("Name cannot be empty.");
+
+                var nameExists = await _context.Categories
+                    .AnyAsync(c => c.UserId == request.UserId &&
+                       c.Name == request.Name.Trim() &&
+                       c.Id != request.Id,  // exclude current record
+                        cancellationToken);
+
+                if (nameExists)
+                    return Result<CategoryDto>.Failure("A category with this name already exists.");
+
                 category.Name = request.Name.Trim();
+            }
 
             if (request.Color is not null)
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(request.Color, @"^#[0-9A-Fa-f]{6}$"))
+                    return Result<CategoryDto>.Failure("Color must be a valid hex code e.g. #FF5733.");
+
                 category.Color = request.Color;
+            }
 
             if (request.Icon is not null)
-                category.Icon = request.Icon;
-            
+                category.Icon = request.Icon == string.Empty ? null : request.Icon;
+
             category.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);

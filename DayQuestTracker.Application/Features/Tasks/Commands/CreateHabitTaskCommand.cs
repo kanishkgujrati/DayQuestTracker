@@ -32,9 +32,30 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             if (category is null)
                 return Result<HabitTaskDto>.Failure("Category not found.");
 
+            if (string.IsNullOrWhiteSpace(request.Title))
+                return Result<HabitTaskDto>.Failure("Title cannot be empty.");
+
+            var titleExists = await _context.Tasks.AnyAsync(t => t.UserId == request.UserId && t.Title == request.Title.Trim(), cancellationToken);
+
+            if (titleExists)
+                return Result<HabitTaskDto>.Failure("A task with this title already exists.");
+
+            if (request.Title.Length > 200)
+                return Result<HabitTaskDto>.Failure("Title cannot exceed 200 characters.");
+
+            if (request.Description is not null && request.Description.Length > 1000)
+                return Result<HabitTaskDto>.Failure("Description cannot exceed 1000 characters.");
+
+            if (request.ScheduledDays is not null &&  request.ScheduledDays.Any(d => d < 0 || d > 6))
+                return Result<HabitTaskDto>.Failure("Scheduled days must be between 0 (Monday) and 6 (Sunday).");
+
             // Business rule: Custom requires TargetPerWeek
             if (request.FrequencyType == FrequencyType.Custom && request.TargetPerWeek is null)
                 return Result<HabitTaskDto>.Failure("TargetPerWeek is required for Custom frequency.");
+
+            if (request.FrequencyType == FrequencyType.Custom && request.TargetPerWeek.HasValue 
+                && (request.TargetPerWeek.Value < 1 || request.TargetPerWeek.Value > 6))
+                    return Result<HabitTaskDto>.Failure("TargetPerWeek must be between 1 and 6.");
 
             // Business rule: Daily tasks don't need schedules
             if (request.FrequencyType == FrequencyType.Daily && request.ScheduledDays?.Any() == true)
@@ -63,7 +84,6 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             };
 
             _context.Tasks.Add(task);
-            await _context.SaveChangesAsync(cancellationToken);
 
             // Create schedules for Weekly/Custom tasks
             if (request.FrequencyType != FrequencyType.Daily && request.ScheduledDays != null)
@@ -76,7 +96,6 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
                         DayOfWeek = day
                     });
                 }
-                await _context.SaveChangesAsync(cancellationToken);
             }
 
             // Create streak record for this task
@@ -85,6 +104,8 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
                 TaskId = task.Id,
                 UserId = request.UserId
             });
+
+            // One single save — all or nothing
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result<HabitTaskDto>.Success(new HabitTaskDto
