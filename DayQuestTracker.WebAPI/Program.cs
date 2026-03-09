@@ -2,6 +2,7 @@ using DayQuestTracker.Application;
 using DayQuestTracker.Application.Common.Models;
 using DayQuestTracker.Infrastructure;
 using DayQuestTracker.Infrastructure.Persistence;
+using DayQuestTracker.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -77,6 +78,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

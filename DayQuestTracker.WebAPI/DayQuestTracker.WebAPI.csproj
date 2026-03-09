@@ -21,8 +21,4 @@
     <ProjectReference Include="..\DayQuestTracker.Infrastructure\DayQuestTracker.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-
 </Project>

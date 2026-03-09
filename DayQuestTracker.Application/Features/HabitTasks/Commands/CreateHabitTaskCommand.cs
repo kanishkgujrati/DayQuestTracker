@@ -28,47 +28,8 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
                 .FirstOrDefaultAsync(c => c.Id == request.CategoryId &&
                                           c.UserId == request.UserId,
                                      cancellationToken);
-
             if (category is null)
                 return Result<HabitTaskDto>.Failure("Category not found.");
-
-            if (string.IsNullOrWhiteSpace(request.Title))
-                return Result<HabitTaskDto>.Failure("Title cannot be empty.");
-
-            var titleExists = await _context.Tasks.AnyAsync(t => t.UserId == request.UserId && t.Title == request.Title.Trim(), cancellationToken);
-
-            if (titleExists)
-                return Result<HabitTaskDto>.Failure("A task with this title already exists.");
-
-            if (request.Title.Length > 200)
-                return Result<HabitTaskDto>.Failure("Title cannot exceed 200 characters.");
-
-            if (request.Description is not null && request.Description.Length > 1000)
-                return Result<HabitTaskDto>.Failure("Description cannot exceed 1000 characters.");
-
-            if (request.ScheduledDays is not null &&  request.ScheduledDays.Any(d => d < 0 || d > 6))
-                return Result<HabitTaskDto>.Failure("Scheduled days must be between 0 (Monday) and 6 (Sunday).");
-
-            // Business rule: Custom requires TargetPerWeek
-            if (request.FrequencyType == FrequencyType.Custom && request.TargetPerWeek is null)
-                return Result<HabitTaskDto>.Failure("TargetPerWeek is required for Custom frequency.");
-
-            if (request.FrequencyType == FrequencyType.Custom && request.TargetPerWeek.HasValue 
-                && (request.TargetPerWeek.Value < 1 || request.TargetPerWeek.Value > 6))
-                    return Result<HabitTaskDto>.Failure("TargetPerWeek must be between 1 and 6.");
-
-            // Business rule: Daily tasks don't need schedules
-            if (request.FrequencyType == FrequencyType.Daily && request.ScheduledDays?.Any() == true)
-                return Result<HabitTaskDto>.Failure("Daily tasks do not require scheduled days.");
-
-            // Business rule: Weekly/Custom require scheduled days
-            if (request.FrequencyType != FrequencyType.Daily &&
-                (request.ScheduledDays is null || !request.ScheduledDays.Any()))
-                return Result<HabitTaskDto>.Failure("Weekly and Custom tasks require at least one scheduled day.");
-
-            // Business rule: Difficulty must be 1-5
-            if (request.Difficulty < 1 || request.Difficulty > 5)
-                return Result<HabitTaskDto>.Failure("Difficulty must be between 1 and 5.");
 
             var task = new HabitTask
             {

@@ -21,15 +21,6 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             CreateCategoryCommand request,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(request.Name))
-                return Result<CategoryDto>.Failure("Name cannot be empty.");
-
-            if (!System.Text.RegularExpressions.Regex.IsMatch(request.Color, @"^#[0-9A-Fa-f]{6}$"))
-                return Result<CategoryDto>.Failure("Color must be a valid hex code e.g. #FF5733.");
-
-            if (request.Icon is not null && request.Icon.Length > 50)
-                return Result<CategoryDto>.Failure("Icon key cannot exceed 50 characters.");
-
             // Check duplicate name for this user
             var trimmedName = request.Name.Trim();
 
@@ -42,7 +33,7 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
                 return Result<CategoryDto>.Failure("A category with this name already exists.");
 
             var category = new Category
-            {
+            {   
                 UserId = request.UserId,
                 Name = request.Name.Trim(),
                 Color = request.Color,
