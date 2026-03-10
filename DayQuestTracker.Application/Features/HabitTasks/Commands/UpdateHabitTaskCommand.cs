@@ -49,11 +49,14 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
                 categoryName = newCategory.Name;
             }
 
+            if (request.Description is not null)
+                task.Description = request.Description == string.Empty ? null : request.Description;
+
+            if (request.Title is not null)
+                task.Title = request.Title.Trim();
+
             if (request.Difficulty.HasValue)
             {
-                if (request.Difficulty.Value < 1 || request.Difficulty.Value > 5)
-                    return Result<HabitTaskDto>.Failure("Difficulty must be between 1 and 5.");
-
                 task.Difficulty = request.Difficulty.Value;
             }
 
