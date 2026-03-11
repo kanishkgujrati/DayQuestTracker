@@ -17,11 +17,9 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
         {
             _context = context;
         }
-
-            LogCompletionCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Result<TaskCompletionDto>> Handle(LogCompletionCommand request, CancellationToken cancellationToken)
         {
-            // Step 1 — Validate task belongs to user
+            // Validate task belongs to user
             var task = await _context.Tasks
                 .Include(t => t.Category)
                 .FirstOrDefaultAsync(t => t.Id == request.TaskId &&
