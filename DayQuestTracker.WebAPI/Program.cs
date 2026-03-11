@@ -2,6 +2,7 @@ using DayQuestTracker.Application;
 using DayQuestTracker.Application.Common.Models;
 using DayQuestTracker.Infrastructure;
 using DayQuestTracker.Infrastructure.Persistence;
+using DayQuestTracker.WebAPI.Infrastructure;
 using DayQuestTracker.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSwaggerGen(c =>
 {
+    c.MapType<DateOnly>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "date",
+        Example = new Microsoft.OpenApi.Any.OpenApiString("2026-03-11")
+    });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -66,7 +73,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+}); 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

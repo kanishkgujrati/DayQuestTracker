@@ -4,6 +4,7 @@
     {
         TaskCompletion = 1,
         AchievementUnlocked = 2,
-        BonusReward = 3
+        BonusReward = 3,
+        UndoCompletion = 4
     }
 }
