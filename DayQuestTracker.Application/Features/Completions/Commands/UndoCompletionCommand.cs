@@ -67,20 +67,21 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 });
             }
 
-            // Step 4 — Delete completion record
+            // Delete completion record
             _context.TaskCompletions.Remove(completion);
 
-            // Step 5 — Recalculate streak from scratch
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Recalculate streak from scratch
             await RecalculateStreakAsync(
                 completion.HabitTaskId,
                 request.UserId,
                 cancellationToken);
 
-            // Step 6 — Recalculate DailyScore for that date
+            // Recalculate DailyScore for that date
             await RecalculateDailyScoreAsync(
                 request.UserId,
                 completionDate,
-                completion.Id, // exclude this completion since we are removing it
                 cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -88,10 +89,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
             return Result<bool>.Success(true);
         }
 
-        private async Task RecalculateStreakAsync(
-            Guid taskId,
-            Guid userId,
-            CancellationToken cancellationToken)
+        private async Task RecalculateStreakAsync(Guid taskId,Guid userId,CancellationToken cancellationToken)
         {
             var streak = await _context.UserTaskStreaks
                 .FirstOrDefaultAsync(s => s.TaskId == taskId &&
@@ -100,62 +98,56 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
 
             if (streak is null) return;
 
-            // Get last Completed record for this task excluding the one being deleted
-            // Note: EF Core change tracker handles this — the removed entity
-            // is excluded from queries in the same context
-            var lastCompleted = await _context.TaskCompletions
-                .Where(tc => tc.HabitTaskId == taskId &&
-                             tc.UserId == userId &&
-                             tc.Status == CompletionStatus.Completed)
-                .OrderByDescending(tc => tc.CompletionDate)
-                .FirstOrDefaultAsync(cancellationToken);
+            var allCompletedDates = await _context.TaskCompletions
+               .Where(tc => tc.HabitTaskId == taskId &&
+                            tc.UserId == userId &&
+                            tc.Status == CompletionStatus.Completed)
+               .Select(tc => tc.CompletionDate)
+               .OrderByDescending(d => d)
+               .ToListAsync(cancellationToken);
 
-            if (lastCompleted is null)
+            if (!allCompletedDates.Any())
             {
-                // No completions left — reset everything
                 streak.CurrentStreak = 0;
                 streak.LastCompletedDate = null;
+                streak.UpdatedAt = DateTime.UtcNow;
+                return;
             }
-            else
+
+            streak.LastCompletedDate = allCompletedDates.First();
+
+            var currentStreak = 0;
+            var checkDate = allCompletedDates.First();
+
+            foreach (var date in allCompletedDates)
             {
-                streak.LastCompletedDate = lastCompleted.CompletionDate;
-
-                // Recalculate current streak by counting consecutive days back from last completed
-                var currentStreak = 0;
-                var checkDate = lastCompleted.CompletionDate;
-
-                while (true)
+                if (date == checkDate)
                 {
-                    var hasCompletion = await _context.TaskCompletions
-                        .AnyAsync(tc => tc.HabitTaskId == taskId &&
-                                        tc.UserId == userId &&
-                                        tc.CompletionDate == checkDate &&
-                                        tc.Status == CompletionStatus.Completed,
-                                  cancellationToken);
-
-                    if (!hasCompletion) break;
-
                     currentStreak++;
                     checkDate = checkDate.AddDays(-1);
                 }
-
-                streak.CurrentStreak = currentStreak;
+                else
+                {
+                    break;
+                }
             }
+
+            streak.CurrentStreak = currentStreak;
+
+            // LongestStreak never decreases on undo
+            // It represents the best streak ever achieved
+            if (streak.CurrentStreak > streak.LongestStreak)
+                streak.LongestStreak = streak.CurrentStreak;
 
             streak.UpdatedAt = DateTime.UtcNow;
         }
 
-        private async Task RecalculateDailyScoreAsync(
-            Guid userId,
-            DateOnly date,
-            Guid excludedCompletionId,
-            CancellationToken cancellationToken)
+        private async Task RecalculateDailyScoreAsync(Guid userId,DateOnly date,CancellationToken cancellationToken)
         {
             // Get remaining completions for this day excluding the deleted one
             var completionsForDay = await _context.TaskCompletions
                 .Where(tc => tc.UserId == userId &&
-                             tc.CompletionDate == date &&
-                             tc.Id != excludedCompletionId)
+                             tc.CompletionDate == date)
                 .ToListAsync(cancellationToken);
 
             var dayOfWeek = (int)date.DayOfWeek == 0 ? 6 : (int)date.DayOfWeek - 1;
@@ -167,14 +159,13 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 .CountAsync(cancellationToken);
 
             var completedCount = completionsForDay.Count(c => c.Status == CompletionStatus.Completed);
-            var skippedCount = completionsForDay.Count(c => c.Status == CompletionStatus.Skipped);
 
             var xpEarned = await _context.XPEvents
                 .Where(x => x.UserId == userId &&
-                            x.XPAmount > 0 && // only positive XP events
-                            x.CreatedAt >= date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) &&
-                            x.CreatedAt < date.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+                            x.TaskCompletionId != null &&
+                            _context.TaskCompletions.Any(tc => tc.Id == x.TaskCompletionId && tc.CompletionDate == date))
                 .SumAsync(x => x.XPAmount, cancellationToken);
+            xpEarned = Math.Max(0, xpEarned);
 
             var score = totalTasks > 0
                 ? (int)Math.Round((double)completedCount / totalTasks * 100)

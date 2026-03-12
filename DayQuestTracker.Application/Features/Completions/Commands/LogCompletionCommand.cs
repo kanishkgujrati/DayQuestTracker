@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Application.Features.Completions.Commands
 {
-    public record LogCompletionCommand(Guid TaskId,Guid UserId,DateOnly CompletionDate,CompletionStatus Status,string? Notes) : IRequest<Result<TaskCompletionDto>>;
+    public record LogCompletionCommand(Guid TaskId, Guid UserId, DateOnly CompletionDate, CompletionStatus Status, string? Notes) : IRequest<Result<TaskCompletionDto>>;
 
     public class LogCompletionCommandHandler : IRequestHandler<LogCompletionCommand, Result<TaskCompletionDto>>
     {
@@ -72,7 +72,8 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                     TaskCompletionId = completion.Id,
                     CategoryId = task.CategoryId,
                     XPAmount = xpAwarded,
-                    Reason = XPReason.TaskCompletion
+                    Reason = XPReason.TaskCompletion,
+                    CreatedAt = DateTime.UtcNow
                 });
 
                 // Update User TotalXP
@@ -83,6 +84,9 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                     user.TotalXP += xpAwarded;
             }
 
+            // streak recalculation sees the new completion in DB
+            await _context.SaveChangesAsync(cancellationToken);
+
             // Update streak
             var streak = await _context.UserTaskStreaks
                 .FirstOrDefaultAsync(s => s.TaskId == request.TaskId &&
@@ -91,47 +95,12 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
 
             if (streak is not null)
             {
-                if (request.Status == CompletionStatus.Completed)
-                {
-                    if (streak.LastCompletedDate == null)
-                    {
-                        // First ever completion
-                        streak.CurrentStreak = 1;
-                    }
-                    else if (streak.LastCompletedDate == request.CompletionDate.AddDays(-1))
-                    {
-                        // Consecutive day — increment
-                        streak.CurrentStreak += 1;
-                    }
-                    else if (streak.LastCompletedDate == request.CompletionDate)
-                    {
-                        // Same day — no change
-                    }
-                    else
-                    {
-                        // Gap in streak — reset
-                        streak.CurrentStreak = 1;
-                    }
-
-                    if (streak.CurrentStreak > streak.LongestStreak)
-                        streak.LongestStreak = streak.CurrentStreak;
-
-                    streak.LastCompletedDate = request.CompletionDate;
-                }
-                else if (request.Status == CompletionStatus.Skipped)
-                {
-                    // Skipped breaks the streak
-                    streak.CurrentStreak = 0;
-                }
-
-                streak.UpdatedAt = DateTime.UtcNow;
+                await RecalculateStreakAsync(streak, request.TaskId, request.UserId, request.Status, cancellationToken);
             }
 
-            // Upsert DailyScore
-            await UpsertDailyScoreAsync(
-                request.UserId,
-                request.CompletionDate,
-                cancellationToken);
+            // Note: UpsertDailyScore runs before SaveChanges intentionally
+            // EF Core change tracker includes pending completion and XP event in queries
+            await UpsertDailyScoreAsync(request.UserId,request.CompletionDate,cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -169,13 +138,14 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 .CountAsync(cancellationToken);
 
             var completedCount = completionsForDay.Count(c => c.Status == CompletionStatus.Completed);
-            var skippedCount = completionsForDay.Count(c => c.Status == CompletionStatus.Skipped);
+
             var xpEarned = await _context.XPEvents
                 .Where(x => x.UserId == userId &&
-                            x.CreatedAt >= date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) &&
-                            x.CreatedAt < date.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+                            x.TaskCompletionId != null &&
+                            _context.TaskCompletions.Any(tc => tc.Id == x.TaskCompletionId && tc.CompletionDate == date))
                 .SumAsync(x => x.XPAmount, cancellationToken);
-
+            xpEarned = Math.Max(0, xpEarned);
+                
             var score = totalTasks > 0
                 ? (int)Math.Round((double)completedCount / totalTasks * 100)
                 : 0;
@@ -206,6 +176,64 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 dailyScore.XPEarned = xpEarned;
                 dailyScore.UpdatedAt = DateTime.UtcNow;
             }
+        }
+        private async Task RecalculateStreakAsync(UserTaskStreak streak, Guid taskId, Guid userId, CompletionStatus justLoggedStatus, CancellationToken cancellationToken)
+        {
+            // logged status is Skipped — streak breaks immediately
+            if (justLoggedStatus == CompletionStatus.Skipped)
+            {
+                streak.CurrentStreak = 0;
+                // LastCompletedDate and LongestStreak unchanged
+                streak.UpdatedAt = DateTime.UtcNow;
+                return;
+            }
+
+            // Get all Completed records for this task including the one just added
+            // EF Core change tracker includes newly added entities in queries
+            var allCompletedDates = await _context.TaskCompletions
+                .Where(tc => tc.HabitTaskId == taskId &&
+                             tc.UserId == userId &&
+                             tc.Status == CompletionStatus.Completed)
+                .Select(tc => tc.CompletionDate)
+                .OrderByDescending(d => d)
+                .ToListAsync(cancellationToken);
+
+            if (!allCompletedDates.Any())
+            {
+                streak.CurrentStreak = 0;
+                streak.LastCompletedDate = null;
+                streak.UpdatedAt = DateTime.UtcNow;
+                return;
+            }
+
+            // LastCompletedDate is always the most recent Completed date
+            streak.LastCompletedDate = allCompletedDates.First();
+
+            // Count consecutive days back from the most recent completed date
+            var currentStreak = 0;
+            var checkDate = allCompletedDates.First();
+
+            foreach (var date in allCompletedDates)
+            {
+                if (date == checkDate)
+                {
+                    currentStreak++;
+                    checkDate = checkDate.AddDays(-1);
+                }
+                else
+                {
+                    // Gap - stop counting
+                    break;
+                }
+            }
+
+            streak.CurrentStreak = currentStreak;
+
+            // Update longest streak if beaten
+            if (streak.CurrentStreak > streak.LongestStreak)
+                streak.LongestStreak = streak.CurrentStreak;
+
+            streak.UpdatedAt = DateTime.UtcNow;
         }
     }
 }
