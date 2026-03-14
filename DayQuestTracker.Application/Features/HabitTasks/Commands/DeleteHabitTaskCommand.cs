@@ -16,9 +16,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             _context = context;
         }
 
-        public async Task<Result<bool>> Handle(
-            DeleteHabitTaskCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Result<bool>> Handle(DeleteHabitTaskCommand request,CancellationToken cancellationToken)
         {
             var task = await _context.Tasks
                 .FirstOrDefaultAsync(t => t.Id == request.Id &&

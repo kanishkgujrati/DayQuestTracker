@@ -39,7 +39,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
 
             // Check for duplicate
             var existingCompletion = await _context.TaskCompletions
-                .FirstOrDefaultAsync(tc => tc.HabitTaskId == request.TaskId &&
+                .FirstOrDefaultAsync(tc => tc.HabitTaskId == request.TaskId &&  
                                            tc.UserId == request.UserId &&
                                            tc.CompletionDate == request.CompletionDate,
                                      cancellationToken);
@@ -67,7 +67,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 xpAwarded = task.XPValue;
 
                 _context.XPEvents.Add(new XPEvent
-                {
+                {   
                     UserId = request.UserId,
                     TaskCompletionId = completion.Id,
                     CategoryId = task.CategoryId,
@@ -118,10 +118,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
             });
         }
 
-        private async Task UpsertDailyScoreAsync(
-            Guid userId,
-            DateOnly date,
-            CancellationToken cancellationToken)
+        private async Task UpsertDailyScoreAsync(Guid userId, DateOnly date, CancellationToken cancellationToken)
         {
             // Get all completions for user on this date
             var completionsForDay = await _context.TaskCompletions
@@ -146,7 +143,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 .SumAsync(x => x.XPAmount, cancellationToken);
             xpEarned = Math.Max(0, xpEarned);
                 
-            var score = totalTasks > 0
+            var score = totalTasks > 0 
                 ? (int)Math.Round((double)completedCount / totalTasks * 100)
                 : 0;
 

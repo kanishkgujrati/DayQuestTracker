@@ -7,12 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Application.Features.Completions.Commands
 {
-    public record UndoCompletionCommand(
-    Guid CompletionId,
-    Guid UserId) : IRequest<Result<bool>>;
+    public record UndoCompletionCommand(Guid CompletionId,Guid UserId) : IRequest<Result<bool>>;
 
-    public class UndoCompletionCommandHandler
-        : IRequestHandler<UndoCompletionCommand, Result<bool>>
+    public class UndoCompletionCommandHandler : IRequestHandler<UndoCompletionCommand, Result<bool>>
     {
         private readonly ITrackerDbContext _context;
 
@@ -21,9 +18,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
             _context = context;
         }
 
-        public async Task<Result<bool>> Handle(
-            UndoCompletionCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Result<bool>> Handle(UndoCompletionCommand request, CancellationToken cancellationToken)
         {
             // Fetch completion, validate ownership
             var completion = await _context.TaskCompletions

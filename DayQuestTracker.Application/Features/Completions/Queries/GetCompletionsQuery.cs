@@ -17,9 +17,7 @@ namespace DayQuestTracker.Application.Features.Completions.Queries
             _context = context;
         }
 
-        public async Task<Result<List<DailyCompletionSummaryDto>>> Handle(
-            GetCompletionsQuery request,
-            CancellationToken cancellationToken)
+        public async Task<Result<List<DailyCompletionSummaryDto>>> Handle(GetCompletionsQuery request,CancellationToken cancellationToken)
         {
             if (request.StartDate > request.EndDate)
                 return Result<List<DailyCompletionSummaryDto>>.Failure("StartDate cannot be after EndDate.");

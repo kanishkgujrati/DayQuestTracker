@@ -16,9 +16,9 @@ namespace DayQuestTracker.Domain.Entities
         // Computed XP value for this task
         public int XPValue => FrequencyType switch
         {
-            FrequencyType.Daily => Difficulty * 10,
-            FrequencyType.Weekly => (int)(Difficulty * 10 * 1.5),
-            FrequencyType.Custom => (int)(Difficulty * 10 * 1.2),
+            FrequencyType.Daily => Difficulty * 10 * 2,
+            FrequencyType.Weekly => (int)(Difficulty * 10),
+            FrequencyType.Custom => (int)(Difficulty * 10 * 1.5),
             _ => Difficulty * 10
         };
 

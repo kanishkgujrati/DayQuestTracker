@@ -16,9 +16,7 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             _context = context;
         }
 
-        public async Task<Result<CategoryDto>> Handle(
-    UpdateCategoryCommand request,
-    CancellationToken cancellationToken)
+        public async Task<Result<CategoryDto>> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
         {
             var category = await _context.Categories
                 .FirstOrDefaultAsync(c => c.Id == request.Id &&

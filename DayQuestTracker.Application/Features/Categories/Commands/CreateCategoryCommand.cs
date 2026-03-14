@@ -17,9 +17,7 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             _context = context;
         }
 
-        public async Task<Result<CategoryDto>> Handle(
-            CreateCategoryCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Result<CategoryDto>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
             // Check duplicate name for this user
             var trimmedName = request.Name.Trim();
@@ -35,7 +33,7 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             var category = new Category
             {   
                 UserId = request.UserId,
-                Name = request.Name.Trim(),
+                Name = request.Name,
                 Color = request.Color,
                 Icon = request.Icon
             };

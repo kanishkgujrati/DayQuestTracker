@@ -16,9 +16,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Queries
             _context = context;
         }
 
-        public async Task<Result<HabitTaskDto>> Handle(
-            GetHabitTaskByIdQuery request,
-            CancellationToken cancellationToken)
+        public async Task<Result<HabitTaskDto>> Handle(GetHabitTaskByIdQuery request, CancellationToken cancellationToken)
         {
             var task = await _context.Tasks
                 .Include(t => t.Category)

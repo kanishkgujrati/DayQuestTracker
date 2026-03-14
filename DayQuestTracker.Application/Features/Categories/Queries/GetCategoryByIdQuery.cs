@@ -16,9 +16,7 @@ namespace DayQuestTracker.Application.Features.Categories.Queries
             _context = context;
         }
 
-        public async Task<Result<CategoryDto>> Handle(
-            GetCategoryByIdQuery request,
-            CancellationToken cancellationToken)
+        public async Task<Result<CategoryDto>> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
         {
             var category = await _context.Categories
                 .Where(c => c.Id == request.Id && c.UserId == request.UserId)

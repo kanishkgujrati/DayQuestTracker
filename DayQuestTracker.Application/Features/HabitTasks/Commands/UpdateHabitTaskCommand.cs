@@ -19,9 +19,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             _context = context;
         }
 
-        public async Task<Result<HabitTaskDto>> Handle(
-            UpdateHabitTaskCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Result<HabitTaskDto>> Handle(UpdateHabitTaskCommand request,CancellationToken cancellationToken)
         {
             var task = await _context.Tasks
                 .Include(t => t.TaskSchedules)
