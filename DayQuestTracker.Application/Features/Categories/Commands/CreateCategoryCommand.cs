@@ -33,7 +33,7 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             var category = new Category
             {   
                 UserId = request.UserId,
-                Name = request.Name,
+                Name = trimmedName,
                 Color = request.Color,
                 Icon = request.Icon
             };
