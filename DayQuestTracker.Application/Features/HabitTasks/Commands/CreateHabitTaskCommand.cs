@@ -19,9 +19,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             _context = context;
         }
 
-        public async Task<Result<HabitTaskDto>> Handle(
-            CreateHabitTaskCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Result<HabitTaskDto>> Handle(CreateHabitTaskCommand request,CancellationToken cancellationToken)
         {
             // Validate category belongs to this user
             var category = await _context.Categories
