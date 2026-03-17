@@ -67,10 +67,8 @@ namespace DayQuestTracker.Application.Features.Analytics
                     if (task.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
                         scheduledDays.Add(current);
                 }
-
                 current = current.AddDays(1);
             }
-
             return scheduledDays;
         }
     }

@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Application.Features.Analytics.Queries
 {
-
-
     public record GetCategoryPerformanceQuery(Guid UserId, DateOnly StartDate, DateOnly EndDate) : IRequest<Result<List<CategoryPerformanceDto>>>;
 
     public class GetCategoryPerformanceQueryHandler : IRequestHandler<GetCategoryPerformanceQuery, Result<List<CategoryPerformanceDto>>>

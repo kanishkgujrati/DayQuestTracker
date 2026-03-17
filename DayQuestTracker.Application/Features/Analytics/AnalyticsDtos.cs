@@ -12,7 +12,6 @@
         public int MissedDays { get; set; }
         public double ConsistencyPercent { get; set; }
     }
-
     public class DailyScoreTrendDto
     {
         public DateOnly Date { get; set; }
@@ -21,7 +20,6 @@
         public int TotalTasks { get; set; }
         public int XPEarned { get; set; }
     }
-
     public class TaskStreakSummaryDto
     {
         public Guid TaskId { get; set; }
@@ -31,7 +29,6 @@
         public int LongestStreak { get; set; }
         public DateOnly? LastCompletedDate { get; set; }
     }
-
     public class CategoryPerformanceDto
     {
         public Guid CategoryId { get; set; }
