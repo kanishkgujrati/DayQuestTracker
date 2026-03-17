@@ -10,7 +10,7 @@ namespace DayQuestTracker.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IAuthTokenGeneratorService, AuthTokenGenratorService>();
+            services.AddScoped<IAuthTokenGeneratorService, AuthTokenGeneratorService>();
 
             services.AddScoped<ITrackerDbContext>(
                 provider => provider.GetRequiredService<TrackerDBContext>());

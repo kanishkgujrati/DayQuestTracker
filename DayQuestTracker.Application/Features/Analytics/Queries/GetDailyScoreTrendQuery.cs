@@ -38,8 +38,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                 .ToListAsync(cancellationToken);
 
             // Fill in missing days with zero scores
-            // Why: frontend chart needs a data point for every day
-            // even days where user had no activity
+            // Why: frontend chart needs a data point for every day even days where user had no activity
             var allDays = new List<DailyScoreTrendDto>();
             var current = request.StartDate;
 

@@ -10,11 +10,11 @@ using System.Text;
 
 namespace DayQuestTracker.Infrastructure.Services
 {
-    public class AuthTokenGenratorService : IAuthTokenGeneratorService
+    public class AuthTokenGeneratorService : IAuthTokenGeneratorService
     {
         private readonly AuthConfiguration _authConfiguration;
 
-        public AuthTokenGenratorService(IOptions<AuthConfiguration> authConfiguration)
+        public AuthTokenGeneratorService(IOptions<AuthConfiguration> authConfiguration)
         {
             _authConfiguration = authConfiguration.Value;
         }

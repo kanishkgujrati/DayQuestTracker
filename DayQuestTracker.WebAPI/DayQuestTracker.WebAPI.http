@@ -1,6 +1,1 @@
 @DayQuestTracker.WebAPI_HostAddress = http://localhost:5289
-
-GET {{DayQuestTracker.WebAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
