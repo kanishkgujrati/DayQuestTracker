@@ -11,6 +11,7 @@ namespace DayQuestTracker.Infrastructure
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthTokenGeneratorService, AuthTokenGeneratorService>();
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
 
             services.AddScoped<ITrackerDbContext>(
                 provider => provider.GetRequiredService<TrackerDBContext>());

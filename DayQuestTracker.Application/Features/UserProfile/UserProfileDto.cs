@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DayQuestTracker.Application.Features.UserProfile
+﻿namespace DayQuestTracker.Application.Features.UserProfile
 {
-    internal class UserProfileDto
+    public class UserProfileDto
     {
+        public Guid Id { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Timezone { get; set; } = string.Empty;
+        public int TotalXP { get; set; }
+        public int Level { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

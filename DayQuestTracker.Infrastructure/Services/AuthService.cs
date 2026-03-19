@@ -12,14 +12,13 @@ namespace DayQuestTracker.Infrastructure.Services
     {
         private readonly TrackerDBContext _dbcontext;
         private readonly IAuthTokenGeneratorService _authTokenGeneratorService;
+        private readonly IPasswordHasher _passwordHasher;
         private readonly AuthConfiguration _authConfiguration;
-        public AuthService(
-        TrackerDBContext context,
-        IAuthTokenGeneratorService authTokenGenerator,
-        IOptions<AuthConfiguration> authConfiguration)
+        public AuthService(TrackerDBContext context, IAuthTokenGeneratorService authTokenGenerator, IPasswordHasher passwordHasher, IOptions<AuthConfiguration> authConfiguration)
         {
             _dbcontext = context;
             _authTokenGeneratorService = authTokenGenerator;
+            _passwordHasher = passwordHasher;
             _authConfiguration = authConfiguration.Value;
         }
 
@@ -39,7 +38,7 @@ namespace DayQuestTracker.Infrastructure.Services
             {
                 Email = request.Email.ToLower().Trim(),
                 Username = request.Username.Trim(),
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                PasswordHash = _passwordHasher.Hash(request.Password),
                 Timezone = request.Timezone,
                 RefreshToken = refreshToken,
                 RefreshTokenExpiry = DateTime.UtcNow.AddDays(_authConfiguration.RefreshTokenExpiryDays)

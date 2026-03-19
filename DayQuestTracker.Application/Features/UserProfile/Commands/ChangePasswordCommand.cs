@@ -1,5 +1,4 @@
-﻿using BCrypt.Net;
-using DayQuestTracker.Application.Common.Interfaces;
+﻿using DayQuestTracker.Application.Common.Interfaces;
 using DayQuestTracker.Application.Common.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +10,12 @@ namespace DayQuestTracker.Application.Features.UserProfile.Commands
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result<bool>>
     {
         private readonly ITrackerDbContext _context;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public ChangePasswordCommandHandler(ITrackerDbContext context)
+        public ChangePasswordCommandHandler(ITrackerDbContext context, IPasswordHasher passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<Result<bool>> Handle(ChangePasswordCommand request,CancellationToken cancellationToken)
@@ -27,18 +28,15 @@ namespace DayQuestTracker.Application.Features.UserProfile.Commands
             if (user is null)
                 return Result<bool>.Failure("User not found.");
 
-            // Verify current password
-            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+            if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
                 return Result<bool>.Failure("Current password is incorrect.");
 
-            if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+            if (_passwordHasher.Verify(request.NewPassword, user.PasswordHash))
                 return Result<bool>.Failure("New password must be different from current password.");
 
-            // Hash and save new password
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
             user.UpdatedAt = DateTime.UtcNow;
 
-            // Invalidate refresh token — force re-login on all devices
             user.RefreshToken = null;
             user.RefreshTokenExpiry = null;
 
