@@ -9,7 +9,7 @@ namespace DayQuestTracker.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]  // All endpoints require a valid JWT
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -60,10 +60,11 @@ namespace DayQuestTracker.WebAPI.Controllers
         }
 
         [HttpDelete("DeleteCategoryById/{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, bool force = false)
         {
-            var result = await _mediator.Send(new DeleteCategoryCommand(id, GetUserId()));
-            return result.IsSuccess ? NoContent() : NotFound(result.Error);
+            var result = await _mediator.Send(new DeleteCategoryCommand(id, GetUserId(), force));
+
+            return result.IsSuccess ? NoContent() : BadRequest(new { error = result.Error });
         }
     }
     public record CreateCategoryRequest(string Name, string Color, string? Icon);
