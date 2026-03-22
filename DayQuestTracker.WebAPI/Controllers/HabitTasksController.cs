@@ -1,4 +1,5 @@
-﻿using DayQuestTracker.Application.Features.Tasks.Commands;
+﻿using DayQuestTracker.Application.Features.HabitTasks.Queries;
+using DayQuestTracker.Application.Features.Tasks.Commands;
 using DayQuestTracker.Application.Features.Tasks.Queries;
 using DayQuestTracker.Domain.Enums;
 using MediatR;
@@ -37,6 +38,15 @@ namespace DayQuestTracker.WebAPI.Controllers
         {
             var result = await _mediator.Send(new GetHabitTaskByIdQuery(id, GetUserId()));
             return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+        }
+
+        [HttpGet("dailyTaskView")]
+        public async Task<IActionResult> GetDailyView([FromQuery] DateOnly date)
+        {
+            var result = await _mediator.Send(
+                new GetDailyTaskViewQuery(GetUserId(), date));
+
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
 
         [HttpPost]
