@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DayQuestTracker.Application.Features.Categories.Commands
 {
-    public record DeleteCategoryCommand(Guid Id, Guid UserId) : IRequest<Result<bool>>;
+
+    public record DeleteCategoryCommand(Guid Id,Guid UserId,bool Force = false) : IRequest<Result<bool>>;
 
     public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, Result<bool>>
     {
@@ -26,7 +27,32 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             if (category is null)
                 return Result<bool>.Failure("Category not found.");
 
-            // Soft delete — never hard delete
+            // Check for active tasks in this category
+            var activeTaskCount = await _context.Tasks
+                .CountAsync(t => t.CategoryId == request.Id &&
+                                 t.DeletedAt == null,
+                            cancellationToken);
+
+            if (activeTaskCount > 0 && !request.Force)
+                return Result<bool>.Failure(
+                    $"This category has {activeTaskCount} active task(s). " +
+                    "Use force=true to delete the category and all its tasks.");
+
+            // Force flag — cascade soft delete to all tasks
+            if (activeTaskCount > 0 && request.Force)
+            {
+                var activeTasks = await _context.Tasks
+                    .Where(t => t.CategoryId == request.Id &&
+                                t.DeletedAt == null)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var task in activeTasks)
+                {
+                    task.DeletedAt = DateTime.UtcNow;
+                    task.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+
             category.DeletedAt = DateTime.UtcNow;
             category.UpdatedAt = DateTime.UtcNow;
 
@@ -35,5 +61,4 @@ namespace DayQuestTracker.Application.Features.Categories.Commands
             return Result<bool>.Success(true);
         }
     }
-
 }
