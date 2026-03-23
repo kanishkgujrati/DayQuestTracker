@@ -1,9 +1,11 @@
 using DayQuestTracker.Application;
 using DayQuestTracker.Application.Common.Models;
 using DayQuestTracker.Infrastructure;
+using DayQuestTracker.Infrastructure.HangfireJobs;
 using DayQuestTracker.Infrastructure.Persistence;
 using DayQuestTracker.WebAPI.Infrastructure;
 using DayQuestTracker.WebAPI.Middleware;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -71,7 +73,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -81,6 +83,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Hangfire Dashboard 
+app.UseHangfireDashboard("/hangfire");
+RecurringJob.AddOrUpdate<StreakResetJob>("nightly-streak-reset", job => job.ExecuteAsync(), "5 0 * * *");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
