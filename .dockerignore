@@ -1,0 +1,8 @@
+**/.git
+**/.vs
+**/bin
+**/obj
+**/*.user
+**/appsettings.Production.json
+**/.env
+**/node_modules
