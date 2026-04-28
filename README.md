@@ -1,5 +1,7 @@
 # DayQuestTracker 🎮
 
+![CI Pipeline](https://github.com/kanishkgujrati/DayQuestTracker/actions/workflows/ci.yml/badge.svg)
+
 > **Gamified Personal Growth Operating System** — Not just a todo app.
 > Habit Tracking + Analytics + Gamification + Social _(coming soon)_
 
