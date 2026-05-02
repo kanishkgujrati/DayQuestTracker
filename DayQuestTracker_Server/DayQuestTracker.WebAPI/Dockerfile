@@ -6,17 +6,17 @@ WORKDIR /src
 
 # Copy solution and project files first
 # Why: Docker caches layers — if only code changes, NuGet restore is skipped
-COPY DayQuestTracker.sln .
-COPY DayQuestTracker.Domain/DayQuestTracker.Domain.csproj DayQuestTracker.Domain/
-COPY DayQuestTracker.Application/DayQuestTracker.Application.csproj DayQuestTracker.Application/
-COPY DayQuestTracker.Infrastructure/DayQuestTracker.Infrastructure.csproj DayQuestTracker.Infrastructure/
-COPY DayQuestTracker.WebAPI/DayQuestTracker.WebAPI.csproj DayQuestTracker.WebAPI/
+COPY DayQuestTracker_Server/DayQuestTracker.sln .
+COPY DayQuestTracker_Server/DayQuestTracker.Domain/DayQuestTracker.Domain.csproj DayQuestTracker.Domain/
+COPY DayQuestTracker_Server/DayQuestTracker.Application/DayQuestTracker.Application.csproj DayQuestTracker.Application/
+COPY DayQuestTracker_Server/DayQuestTracker.Infrastructure/DayQuestTracker.Infrastructure.csproj DayQuestTracker.Infrastructure/
+COPY DayQuestTracker_Server/DayQuestTracker.WebAPI/DayQuestTracker.WebAPI.csproj DayQuestTracker.WebAPI/
 
 # Restore NuGet packages
 RUN dotnet restore
 
 # Copy all source code
-COPY . .
+COPY DayQuestTracker_Server/. .
 
 # Build and publish
 RUN dotnet publish DayQuestTracker.WebAPI/DayQuestTracker.WebAPI.csproj \
