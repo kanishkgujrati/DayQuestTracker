@@ -1,0 +1,90 @@
+<div class="min-h-screen flex items-center justify-center bg-slate-900 px-4">
+  <div class="w-full max-w-md">
+    <!-- Logo / Title -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-white mb-2">DayQuest</h1>
+      <p class="text-slate-400">Start your journey today</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-700">
+      <h2 class="text-xl font-semibold text-white mb-6">Create your account</h2>
+
+      <!-- Error Message -->
+      @if (error$ | async; as error) {
+        <div
+          class="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm"
+        >
+          {{ error }}
+        </div>
+      }
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-slate-400 transition"
+          />
+          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <p class="text-red-400 text-xs mt-1">Please enter a valid email.</p>
+          }
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Username</label>
+          <input
+            type="text"
+            formControlName="username"
+            placeholder="cooluser123"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-slate-400 transition"
+          />
+          @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+            <p class="text-red-400 text-xs mt-1">Username must be 3 to 100 characters.</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Password</label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-slate-400 transition"
+          />
+          @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+            <p class="text-red-400 text-xs mt-1">
+              Password needs 8+ characters, one number and one special character.
+            </p>
+          }
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || (isLoading$ | async)"
+          class="w-full bg-sky-600 hover:bg-sky-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition mt-2"
+        >
+          @if (isLoading$ | async) {
+            <span>Creating account...</span>
+          } @else {
+            <span>Create Account</span>
+          }
+        </button>
+      </form>
+
+      <!-- Login Link -->
+      <p class="text-center text-slate-400 text-sm mt-6">
+        Already have an account?
+        <a routerLink="/auth/login" class="text-sky-400 hover:text-sky-300 font-medium">
+          Sign in
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
