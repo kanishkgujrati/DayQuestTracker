@@ -9,14 +9,16 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { isDevMode } from '@angular/core';
 import { authReducer } from './store/auth/auth.reducers';
 import { AuthEffects } from './store/auth/auth.effects';
+import { DashboardEffects } from './store/dashboard/dashboard.effects';
+import { dashboardReducer } from './store/dashboard/dashboard.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideStore({ auth: authReducer }),
-    provideEffects([AuthEffects]),
+    provideStore({ auth: authReducer, dashboard: dashboardReducer }),
+    provideEffects([AuthEffects, DashboardEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),
