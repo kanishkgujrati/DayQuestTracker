@@ -1,12 +1,12 @@
 export enum FrequencyType {
   Daily = 1,
   Weekly = 2,
-  Custom = 3
+  Custom = 3,
 }
 
 export enum CompletionStatus {
   Completed = 1,
-  Skipped = 2
+  Skipped = 2,
 }
 
 export interface HabitTask {
@@ -46,4 +46,21 @@ export interface CreateHabitTaskRequest {
   frequencyType: FrequencyType;
   targetPerWeek?: number;
   scheduledDays?: number[];
+}
+
+export interface UpdateHabitTaskRequest {
+  categoryId?: string;
+  title?: string;
+  description?: string;
+  difficulty?: number;
+  frequencyType?: FrequencyType;
+  targetPerWeek?: number;
+  scheduledDays?: number[];
+}
+
+export interface LogCompletionRequest {
+  taskId: string;
+  completionDate: string;
+  status: CompletionStatus;
+  notes?: string;
 }
