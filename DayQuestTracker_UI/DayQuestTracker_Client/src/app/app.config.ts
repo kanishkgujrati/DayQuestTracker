@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideStore({ auth: authReducer, dashboard: dashboardReducer }),
-    provideEffects([AuthEffects, DashboardEffects]),
+    provideEffects(AuthEffects, DashboardEffects),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),

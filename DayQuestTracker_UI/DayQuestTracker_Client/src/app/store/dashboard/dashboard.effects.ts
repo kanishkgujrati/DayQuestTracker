@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -8,10 +8,9 @@ import * as DashboardActions from './dashboard.actions';
 
 @Injectable()
 export class DashboardEffects {
-  constructor(
-    private actions$: Actions,
-    private taskService: TaskService,
-  ) {}
+
+  private actions$ = inject(Actions);
+  private taskService = inject(TaskService);
 
   loadDailyTasks$ = createEffect(() =>
     this.actions$.pipe(
