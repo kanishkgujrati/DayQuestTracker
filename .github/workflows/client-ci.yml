@@ -1,0 +1,42 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "DayQuestTracker_UI/**"
+
+  pull_request:
+    branches: [main]
+    paths:
+      - "DayQuestTracker_UI/**"
+
+jobs:
+  build-angular:
+    name: Build Angular App
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: DayQuestTracker_UI/DayQuestTracker_Client
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: DayQuestTracker_UI/DayQuestTracker_Client/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Angular App
+        run: npm run build
+
+      # Optional
+      # - name: Run Unit Tests
+      #   run: npm run test -- --watch=false --browsers=ChromeHeadless
