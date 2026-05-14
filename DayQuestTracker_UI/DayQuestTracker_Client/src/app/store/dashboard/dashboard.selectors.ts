@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { DashboardState } from './dashboard.reducer';
-import { CompletionStatus } from '../../core/models/task.model';
+import { CompletionStatus } from '../../core/models/task.models';
 
 export const selectDashboardState = createFeatureSelector<DashboardState>('dashboard');
 

@@ -8,7 +8,7 @@ import {
   CreateHabitTaskRequest,
   UpdateHabitTaskRequest,
   LogCompletionRequest,
-} from '../models/task.model';
+} from '../models/task.models';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {

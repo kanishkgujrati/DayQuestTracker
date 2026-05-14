@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { DailyTaskView, CompletionStatus } from '../../core/models/task.model';
+import { DailyTaskView, CompletionStatus } from '../../core/models/task.models';
 import {
   loadDailyTasks,
   logCompletion,

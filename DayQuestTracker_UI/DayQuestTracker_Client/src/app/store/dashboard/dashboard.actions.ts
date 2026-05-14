@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { DailyTaskView } from '../../core/models/task.model';
+import { DailyTaskView } from '../../core/models/task.models';
 
 export const loadDailyTasks = createAction(
   '[Dashboard] Load Daily Tasks',

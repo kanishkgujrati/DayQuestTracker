@@ -11,13 +11,14 @@ import { authReducer } from './store/auth/auth.reducers';
 import { AuthEffects } from './store/auth/auth.effects';
 import { DashboardEffects } from './store/dashboard/dashboard.effects';
 import { dashboardReducer } from './store/dashboard/dashboard.reducer';
+import { categoryReducer } from './store/category/category.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideStore({ auth: authReducer, dashboard: dashboardReducer }),
+    provideStore({ auth: authReducer, dashboard: dashboardReducer, category: categoryReducer }),
     provideEffects(AuthEffects, DashboardEffects),
     provideStoreDevtools({
       maxAge: 25,

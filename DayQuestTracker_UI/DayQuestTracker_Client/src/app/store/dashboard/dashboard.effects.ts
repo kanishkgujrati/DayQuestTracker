@@ -3,12 +3,11 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TaskService } from '../../core/services/task.service';
-import { CompletionStatus } from '../../core/models/task.model';
+import { CompletionStatus } from '../../core/models/task.models';
 import * as DashboardActions from './dashboard.actions';
 
 @Injectable()
 export class DashboardEffects {
-
   private actions$ = inject(Actions);
   private taskService = inject(TaskService);
 

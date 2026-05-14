@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { DailyTaskView } from '../../core/models/task.model';
+import { DailyTaskView } from '../../core/models/task.models';
 import * as DashboardActions from './dashboard.actions';
 
 export interface DashboardState {

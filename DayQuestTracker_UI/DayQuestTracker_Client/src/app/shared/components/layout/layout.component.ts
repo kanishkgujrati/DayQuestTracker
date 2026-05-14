@@ -9,7 +9,7 @@ import {
   selectUserLevel,
   selectUserXP,
 } from '../../../store/auth/auth.selectors';
-import { AuthUser } from '../../../core/models/auth.model';
+import { AuthUser } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-layout',
