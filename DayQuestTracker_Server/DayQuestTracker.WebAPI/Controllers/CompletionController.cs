@@ -50,13 +50,15 @@ namespace DayQuestTracker.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCompletions(
-            [FromQuery] DateOnly startDate,
-            [FromQuery] DateOnly endDate,
-            [FromQuery] Guid? taskId = null)
+        public async Task<IActionResult> GetCompletions([FromQuery] string startDate,[FromQuery] string endDate,[FromQuery] Guid? taskId = null)
         {
+            if (!DateOnly.TryParse(startDate, out var parsedstartDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+            if (!DateOnly.TryParse(endDate, out var parsedEndDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
             var result = await _mediator.Send(
-                new GetCompletionsQuery(GetUserId(), startDate, endDate, taskId));
+                new GetCompletionsQuery(GetUserId(), parsedstartDate, parsedEndDate, taskId));
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }

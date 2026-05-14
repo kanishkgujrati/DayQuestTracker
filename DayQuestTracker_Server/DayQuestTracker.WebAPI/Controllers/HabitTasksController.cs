@@ -41,10 +41,13 @@ namespace DayQuestTracker.WebAPI.Controllers
         }
 
         [HttpGet("dailyTaskView")]
-        public async Task<IActionResult> GetDailyView([FromQuery] DateOnly date)
+        public async Task<IActionResult> GetDailyView([FromQuery] string date)
         {
+            if (!DateOnly.TryParse(date, out var parsedDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
             var result = await _mediator.Send(
-                new GetDailyTaskViewQuery(GetUserId(), date));
+                new GetDailyTaskViewQuery(GetUserId(), parsedDate));
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }

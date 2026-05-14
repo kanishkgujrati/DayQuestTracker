@@ -33,10 +33,15 @@ namespace DayQuestTracker.WebAPI.Controllers
         }
 
         [HttpGet("daily-trend")]
-        public async Task<IActionResult> GetDailyTrend([FromQuery] DateOnly startDate,[FromQuery] DateOnly endDate)
+        public async Task<IActionResult> GetDailyTrend([FromQuery] string startDate,[FromQuery] string endDate)
         {
+            if (!DateOnly.TryParse(startDate, out var parsedstartDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+            if (!DateOnly.TryParse(endDate, out var parsedEndDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
             var result = await _mediator.Send(
-                new GetDailyScoreTrendQuery(GetUserId(), startDate, endDate));
+                new GetDailyScoreTrendQuery(GetUserId(), parsedstartDate, parsedEndDate));
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
@@ -49,19 +54,29 @@ namespace DayQuestTracker.WebAPI.Controllers
         }
 
         [HttpGet("weakest-habits")]
-        public async Task<IActionResult> GetWeakestHabits([FromQuery] DateOnly startDate,[FromQuery] DateOnly endDate,[FromQuery] int topN = 5)
+        public async Task<IActionResult> GetWeakestHabits([FromQuery] string startDate,[FromQuery] string endDate,[FromQuery] int topN = 5)
         {
+            if (!DateOnly.TryParse(startDate, out var parsedstartDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+            if (!DateOnly.TryParse(endDate, out var parsedEndDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
             var result = await _mediator.Send(
-                new GetWeakestHabitsQuery(GetUserId(), startDate, endDate, topN));
+                new GetWeakestHabitsQuery(GetUserId(), parsedstartDate, parsedEndDate, topN));
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
 
         [HttpGet("category-performance")]
-        public async Task<IActionResult> GetCategoryPerformance([FromQuery] DateOnly startDate,[FromQuery] DateOnly endDate)
+        public async Task<IActionResult> GetCategoryPerformance([FromQuery] string startDate,[FromQuery] string endDate)
         {
+            if (!DateOnly.TryParse(startDate, out var parsedstartDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+            if (!DateOnly.TryParse(endDate, out var parsedEndDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
             var result = await _mediator.Send(
-                new GetCategoryPerformanceQuery(GetUserId(), startDate, endDate));
+                new GetCategoryPerformanceQuery(GetUserId(), parsedstartDate, parsedEndDate));
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
