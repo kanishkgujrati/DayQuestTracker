@@ -12,6 +12,7 @@ import { AuthEffects } from './store/auth/auth.effects';
 import { DashboardEffects } from './store/dashboard/dashboard.effects';
 import { dashboardReducer } from './store/dashboard/dashboard.reducer';
 import { categoryReducer } from './store/category/category.reducer';
+import { CategoryEffects } from './store/category/category.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideStore({ auth: authReducer, dashboard: dashboardReducer, category: categoryReducer }),
-    provideEffects(AuthEffects, DashboardEffects),
+    provideEffects(AuthEffects, DashboardEffects, CategoryEffects),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),
