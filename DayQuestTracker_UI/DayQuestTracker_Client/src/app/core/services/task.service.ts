@@ -7,48 +7,48 @@ import {
   DailyTaskView,
   CreateHabitTaskRequest,
   UpdateHabitTaskRequest,
-  LogCompletionRequest
+  LogCompletionRequest,
 } from '../models/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly apiUrl = `${environment.apiUrl}`;
+  private readonly tasksapiUrl = `${environment.apiUrl}/habittasks`;
+  private readonly completionapiUrl = `${environment.apiUrl}/completions`;
 
   constructor(private http: HttpClient) {}
 
   // Tasks
   getTasks(categoryId?: string): Observable<HabitTask[]> {
     const params = categoryId ? `?categoryId=${categoryId}` : '';
-    return this.http.get<HabitTask[]>(`${this.apiUrl}/habittasks${params}`);
+    return this.http.get<HabitTask[]>(`${this.tasksapiUrl}${params}`);
   }
 
   getTaskById(id: string): Observable<HabitTask> {
-    return this.http.get<HabitTask>(`${this.apiUrl}/habittasks/${id}`);
+    return this.http.get<HabitTask>(`${this.tasksapiUrl}/${id}`);
   }
 
   getDailyTasks(date: string): Observable<DailyTaskView[]> {
-    return this.http.get<DailyTaskView[]>(
-      `${this.apiUrl}/habittasks/daily?date=${date}`);
+    return this.http.get<DailyTaskView[]>(`${this.tasksapiUrl}/dailyTasks?date=${date}`);
   }
 
   createTask(request: CreateHabitTaskRequest): Observable<HabitTask> {
-    return this.http.post<HabitTask>(`${this.apiUrl}/habittasks`, request);
+    return this.http.post<HabitTask>(`${this.tasksapiUrl}`, request);
   }
 
   updateTask(id: string, request: UpdateHabitTaskRequest): Observable<HabitTask> {
-    return this.http.patch<HabitTask>(`${this.apiUrl}/habittasks/${id}`, request);
+    return this.http.patch<HabitTask>(`${this.tasksapiUrl}/${id}`, request);
   }
 
   deleteTask(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/habittasks/${id}`);
+    return this.http.delete<void>(`${this.tasksapiUrl}/${id}`);
   }
 
   // Completions
   logCompletion(request: LogCompletionRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/completions`, request);
+    return this.http.post(`${this.completionapiUrl}`, request);
   }
 
   undoCompletion(completionId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/completions/${completionId}`);
+    return this.http.delete<void>(`${this.completionapiUrl}/${completionId}`);
   }
 }

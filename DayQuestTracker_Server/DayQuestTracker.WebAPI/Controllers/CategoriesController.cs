@@ -25,21 +25,21 @@ namespace DayQuestTracker.WebAPI.Controllers
                 ?? User.FindFirstValue("sub")
                 ?? throw new UnauthorizedAccessException());
 
-        [HttpGet("GetAllCategories")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetCategoriesQuery(GetUserId()));
             return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
         }
 
-        [HttpGet("GetCategoryById/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetCategoryByIdQuery(id, GetUserId()));
             return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
         }
 
-        [HttpPost("CreateCategory")]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
         {
             var result = await _mediator.Send(
@@ -50,7 +50,7 @@ namespace DayQuestTracker.WebAPI.Controllers
                 : Conflict(result.Error);
         }
 
-        [HttpPatch("UpdateCategoryById/{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCategoryRequest request)
         {
             var result = await _mediator.Send(
@@ -59,7 +59,7 @@ namespace DayQuestTracker.WebAPI.Controllers
             return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
         }
 
-        [HttpDelete("DeleteCategoryById/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id, bool force = false)
         {
             var result = await _mediator.Send(new DeleteCategoryCommand(id, GetUserId(), force));

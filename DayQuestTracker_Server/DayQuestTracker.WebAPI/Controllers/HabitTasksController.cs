@@ -40,7 +40,7 @@ namespace DayQuestTracker.WebAPI.Controllers
             return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
         }
 
-        [HttpGet("dailyTaskView")]
+        [HttpGet("dailyTasks")]
         public async Task<IActionResult> GetDailyView([FromQuery] string date)
         {
             if (!DateOnly.TryParse(date, out var parsedDate))
