@@ -26,8 +26,6 @@ namespace DayQuestTracker.Application.Features.HabitTasks.Queries
 
             // Fetch all active tasks scheduled for this day
             var tasks = await _context.Tasks
-                .Include(t => t.Category)
-                .Include(t => t.TaskSchedules)
                 .Where(t => t.UserId == request.UserId &&
                             t.DeletedAt == null &&
                             (t.FrequencyType == FrequencyType.Daily ||

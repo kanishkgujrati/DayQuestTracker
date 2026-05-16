@@ -19,8 +19,6 @@ namespace DayQuestTracker.Application.Features.Tasks.Queries
         public async Task<Result<List<HabitTaskDto>>> Handle(GetHabitTasksQuery request, CancellationToken cancellationToken)
         {
             var query = _context.Tasks
-                .Include(t => t.Category)
-                .Include(t => t.TaskSchedules)
                 .Where(t => t.UserId == request.UserId);
 
             // Optional filter by category
@@ -40,7 +38,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Queries
                     Difficulty = t.Difficulty,
                     FrequencyType = t.FrequencyType,
                     TargetPerWeek = t.TargetPerWeek,
-                    ScheduledDays = t.TaskSchedules.Select(s => s.DayOfWeek).ToList(),
+                    ScheduledDays = t.TaskSchedules.OrderBy(s => s.DayOfWeek).Select(s => s.DayOfWeek).ToList(),
                     XPValue = t.XPValue,
                     CreatedAt = t.CreatedAt
                 })

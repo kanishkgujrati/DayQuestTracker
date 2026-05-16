@@ -47,7 +47,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             // Create schedules for Weekly/Custom tasks
             if (request.FrequencyType != FrequencyType.Daily && request.ScheduledDays != null)
             {
-                foreach (var day in request.ScheduledDays.Distinct())
+                foreach (var day in request.ScheduledDays.Distinct().OrderBy(d => d))
                 {
                     _context.TaskSchedules.Add(new HabitTaskSchedule
                     {
