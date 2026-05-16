@@ -13,14 +13,21 @@ import { DashboardEffects } from './store/dashboard/dashboard.effects';
 import { dashboardReducer } from './store/dashboard/dashboard.reducer';
 import { categoryReducer } from './store/category/category.reducer';
 import { CategoryEffects } from './store/category/category.effects';
+import { taskReducer } from './store/tasks/task.reducer';
+import { TaskEffects } from './store/tasks/task.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideStore({ auth: authReducer, dashboard: dashboardReducer, category: categoryReducer }),
-    provideEffects(AuthEffects, DashboardEffects, CategoryEffects),
+    provideStore({
+      auth: authReducer,
+      dashboard: dashboardReducer,
+      category: categoryReducer,
+      task: taskReducer,
+    }),
+    provideEffects(AuthEffects, DashboardEffects, CategoryEffects, TaskEffects),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),
