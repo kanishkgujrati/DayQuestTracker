@@ -26,7 +26,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                 return Result<List<TaskConsistencyDto>>
                     .Failure("TopN must be between 1 and 20.");
 
-            var tasks = await _context.Tasks
+            var tasks = await _context.Tasks.AsNoTracking()
                 .Include(t => t.Category)
                 .Include(t => t.TaskSchedules)
                 .Where(t => t.UserId == request.UserId &&
@@ -38,7 +38,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
 
             var taskIds = tasks.Select(t => t.Id).ToList();
 
-            var completions = await _context.TaskCompletions
+            var completions = await _context.TaskCompletions.AsNoTracking()
                 .Where(tc => tc.UserId == request.UserId &&
                              taskIds.Contains(tc.HabitTaskId) &&
                              tc.CompletionDate >= request.StartDate &&

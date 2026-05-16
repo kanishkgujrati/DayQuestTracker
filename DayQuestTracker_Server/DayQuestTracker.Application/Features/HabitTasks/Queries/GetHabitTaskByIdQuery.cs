@@ -18,7 +18,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Queries
 
         public async Task<Result<HabitTaskDto>> Handle(GetHabitTaskByIdQuery request, CancellationToken cancellationToken)
         {
-            var task = await _context.Tasks
+            var task = await _context.Tasks.AsNoTracking()
                 .Where(t => t.Id == request.Id && t.UserId == request.UserId && t.DeletedAt == null)
                 .Select(t => new HabitTaskDto
                 {

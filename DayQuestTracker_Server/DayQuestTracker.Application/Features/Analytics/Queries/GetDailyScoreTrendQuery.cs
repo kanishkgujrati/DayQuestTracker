@@ -22,7 +22,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                 return Result<List<DailyScoreTrendDto>>
                     .Failure("StartDate cannot be after EndDate.");
 
-            var scores = await _context.DailyScores
+            var scores = await _context.DailyScores.AsNoTracking()
                 .Where(ds => ds.UserId == request.UserId &&
                              ds.Date >= request.StartDate &&
                              ds.Date <= request.EndDate)

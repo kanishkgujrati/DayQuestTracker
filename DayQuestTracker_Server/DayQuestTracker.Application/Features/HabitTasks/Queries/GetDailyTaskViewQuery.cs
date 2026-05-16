@@ -25,7 +25,7 @@ namespace DayQuestTracker.Application.Features.HabitTasks.Queries
                 : (int)request.Date.DayOfWeek - 1;
 
             // Fetch all active tasks scheduled for this day
-            var tasks = await _context.Tasks
+            var tasks = await _context.Tasks.AsNoTracking()
                 .Where(t => t.UserId == request.UserId &&
                             t.DeletedAt == null &&
                             (t.FrequencyType == FrequencyType.Daily ||

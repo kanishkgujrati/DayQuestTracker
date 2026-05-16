@@ -22,7 +22,7 @@ namespace DayQuestTracker.Application.Features.Completions.Queries
             if (request.StartDate > request.EndDate)
                 return Result<List<DailyCompletionSummaryDto>>.Failure("StartDate cannot be after EndDate.");
 
-            var query = _context.TaskCompletions
+            var query = _context.TaskCompletions.AsNoTracking()
                 .Include(tc => tc.HabitTask)
                 .ThenInclude(t => t.Category)
                 .Where(tc => tc.UserId == request.UserId &&
@@ -38,7 +38,7 @@ namespace DayQuestTracker.Application.Features.Completions.Queries
                 .ToListAsync(cancellationToken);
 
             // Fetch daily scores for the date range
-            var dailyScores = await _context.DailyScores
+            var dailyScores = await _context.DailyScores.AsNoTracking()
                 .Where(ds => ds.UserId == request.UserId &&
                              ds.Date >= request.StartDate &&
                              ds.Date <= request.EndDate)

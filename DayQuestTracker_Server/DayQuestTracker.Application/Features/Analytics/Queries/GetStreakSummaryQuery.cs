@@ -18,7 +18,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
 
         public async Task<Result<List<TaskStreakSummaryDto>>> Handle(GetStreakSummaryQuery request,CancellationToken cancellationToken)
         {
-            var streaks = await _context.UserTaskStreaks
+            var streaks = await _context.UserTaskStreaks.AsNoTracking()
                 .Include(s => s.Task)
                     .ThenInclude(t => t.Category)
                 .Where(s => s.UserId == request.UserId &&

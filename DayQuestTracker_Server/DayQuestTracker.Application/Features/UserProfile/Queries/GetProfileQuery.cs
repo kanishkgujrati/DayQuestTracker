@@ -18,7 +18,7 @@ namespace DayQuestTracker.Application.Features.UserProfile.Queries
 
         public async Task<Result<UserProfileDto>> Handle(GetProfileQuery request,CancellationToken cancellationToken)
         {
-            var user = await _context.Users
+            var user = await _context.Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == request.UserId &&
                                           u.IsActive,
                                      cancellationToken);

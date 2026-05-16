@@ -24,7 +24,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                     .Failure("StartDate cannot be after EndDate.");
 
             // Fetch all active tasks for this user
-            var tasksQuery = _context.Tasks
+            var tasksQuery = _context.Tasks.AsNoTracking()
                 .Include(t => t.Category)
                 .Include(t => t.TaskSchedules)
                 .Where(t => t.UserId == request.UserId &&
@@ -44,7 +44,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
             var taskIds = tasks.Select(t => t.Id).ToList();
 
             // Fetch all completions for these tasks in the date range — single query
-            var completions = await _context.TaskCompletions
+            var completions = await _context.TaskCompletions.AsNoTracking()
                 .Where(tc => tc.UserId == request.UserId &&
                              taskIds.Contains(tc.HabitTaskId) &&
                              tc.CompletionDate >= request.StartDate &&
