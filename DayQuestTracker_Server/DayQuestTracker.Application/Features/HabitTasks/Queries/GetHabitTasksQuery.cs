@@ -19,7 +19,7 @@ namespace DayQuestTracker.Application.Features.Tasks.Queries
         public async Task<Result<List<HabitTaskDto>>> Handle(GetHabitTasksQuery request, CancellationToken cancellationToken)
         {
             var query = _context.Tasks
-                .Where(t => t.UserId == request.UserId);
+                .Where(t => t.UserId == request.UserId && t.DeletedAt == null);
 
             // Optional filter by category
             if (request.CategoryId.HasValue)
