@@ -28,12 +28,7 @@ namespace DayQuestTracker.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> LogCompletion([FromBody] LogCompletionRequest request)
         {
-            var result = await _mediator.Send(new LogCompletionCommand(
-                request.TaskId,
-                GetUserId(),
-                request.CompletionDate,
-                request.Status,
-                request.Notes));
+            var result = await _mediator.Send(new LogCompletionCommand(request.TaskId,GetUserId(),request.CompletionDate,request.Status,request.Notes));
 
             return result.IsSuccess
                 ? CreatedAtAction(nameof(GetCompletions), null, result.Value)

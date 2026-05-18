@@ -24,10 +24,15 @@ namespace DayQuestTracker.WebAPI.Controllers
                 ?? throw new UnauthorizedAccessException());
 
         [HttpGet("consistency")]
-        public async Task<IActionResult> GetConsistency([FromQuery] DateOnly startDate,[FromQuery] DateOnly endDate,[FromQuery] Guid? categoryId = null)
+        public async Task<IActionResult> GetConsistency([FromQuery] string startDate,[FromQuery] string endDate,[FromQuery] Guid? categoryId = null)
         {
+            if (!DateOnly.TryParse(startDate, out var parsedstartDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+            if (!DateOnly.TryParse(endDate, out var parsedEndDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
             var result = await _mediator.Send(
-                new GetTaskConsistencyQuery(GetUserId(), startDate, endDate, categoryId));
+                new GetTaskConsistencyQuery(GetUserId(), parsedstartDate, parsedEndDate, categoryId));
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
