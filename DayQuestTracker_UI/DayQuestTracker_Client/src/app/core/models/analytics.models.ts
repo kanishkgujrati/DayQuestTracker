@@ -36,3 +36,14 @@ export interface CategoryPerformance {
   totalXPEarned: number;
   bestStreak: number;
 }
+
+export interface WeakestHabit {
+  taskId: string;
+  taskTitle: string;
+  categoryName: string;
+  categoryColor: string;
+  totalScheduledDays: number;
+  completedDays: number;
+  missedDays: number;
+  consistencyPercent: number;
+}

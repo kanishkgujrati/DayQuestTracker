@@ -15,6 +15,8 @@ import { categoryReducer } from './store/category/category.reducer';
 import { CategoryEffects } from './store/category/category.effects';
 import { taskReducer } from './store/tasks/task.reducer';
 import { TaskEffects } from './store/tasks/task.effects';
+import { analyticsReducer } from './store/analytics/analytics.reducer';
+import { AnalyticsEffects } from './store/analytics/analytics.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,8 +28,9 @@ export const appConfig: ApplicationConfig = {
       dashboard: dashboardReducer,
       category: categoryReducer,
       task: taskReducer,
+      analytics: analyticsReducer,
     }),
-    provideEffects(AuthEffects, DashboardEffects, CategoryEffects, TaskEffects),
+    provideEffects(AuthEffects, DashboardEffects, CategoryEffects, TaskEffects, AnalyticsEffects),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),

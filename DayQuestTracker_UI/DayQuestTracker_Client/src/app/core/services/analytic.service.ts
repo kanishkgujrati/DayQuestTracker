@@ -1,0 +1,49 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environments';
+import {
+  TaskConsistency,
+  DailyScoreTrend,
+  TaskStreakSummary,
+  CategoryPerformance,
+  WeakestHabit,
+} from '../models/analytics.models';
+
+@Injectable({ providedIn: 'root' })
+export class AnalyticsService {
+  private readonly apiUrl = `${environment.apiUrl}/analytics`;
+
+  constructor(private http: HttpClient) {}
+
+  getConsistency(
+    startDate: string,
+    endDate: string,
+    categoryId?: string,
+  ): Observable<TaskConsistency[]> {
+    const params = categoryId ? `?categoryId=${categoryId}` : '';
+    return this.http.get<TaskConsistency[]>(
+      `${this.apiUrl}/consistency/${startDate}/${endDate}${params}`,
+    );
+  }
+
+  getDailyTrend(startDate: string, endDate: string): Observable<DailyScoreTrend[]> {
+    return this.http.get<DailyScoreTrend[]>(`${this.apiUrl}/daily-trend/${startDate}/${endDate}`);
+  }
+
+  getStreaks(): Observable<TaskStreakSummary[]> {
+    return this.http.get<TaskStreakSummary[]>(`${this.apiUrl}/streaks`);
+  }
+
+  getWeakestHabits(startDate: string, endDate: string, topN = 5): Observable<WeakestHabit[]> {
+    return this.http.get<WeakestHabit[]>(
+      `${this.apiUrl}/weakest-habits/${startDate}/${endDate}?topN=${topN}`,
+    );
+  }
+
+  getCategoryPerformance(startDate: string, endDate: string): Observable<CategoryPerformance[]> {
+    return this.http.get<CategoryPerformance[]>(
+      `${this.apiUrl}/category-performance/${startDate}/${endDate}`,
+    );
+  }
+}
