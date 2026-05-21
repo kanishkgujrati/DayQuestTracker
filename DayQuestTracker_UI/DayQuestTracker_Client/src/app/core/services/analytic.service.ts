@@ -12,7 +12,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
-  private readonly apiUrl = `${environment.apiUrl}/analytics`;
+  private readonly apiUrl = `${environment.apiUrl}/Analytics`;
 
   constructor(private http: HttpClient) {}
 
@@ -21,14 +21,25 @@ export class AnalyticsService {
     endDate: string,
     categoryId?: string,
   ): Observable<TaskConsistency[]> {
-    const params = categoryId ? `?categoryId=${categoryId}` : '';
-    return this.http.get<TaskConsistency[]>(
-      `${this.apiUrl}/consistency/${startDate}/${endDate}${params}`,
-    );
+    const params: any = {
+      startDate,
+      endDate,
+    };
+
+    if (categoryId) {
+      params.categoryId = categoryId;
+    }
+
+    return this.http.get<TaskConsistency[]>(`${this.apiUrl}/consistency`, { params });
   }
 
   getDailyTrend(startDate: string, endDate: string): Observable<DailyScoreTrend[]> {
-    return this.http.get<DailyScoreTrend[]>(`${this.apiUrl}/daily-trend/${startDate}/${endDate}`);
+    return this.http.get<DailyScoreTrend[]>(`${this.apiUrl}/daily-trend`, {
+      params: {
+        startDate,
+        endDate,
+      },
+    });
   }
 
   getStreaks(): Observable<TaskStreakSummary[]> {
@@ -36,14 +47,21 @@ export class AnalyticsService {
   }
 
   getWeakestHabits(startDate: string, endDate: string, topN = 5): Observable<WeakestHabit[]> {
-    return this.http.get<WeakestHabit[]>(
-      `${this.apiUrl}/weakest-habits/${startDate}/${endDate}?topN=${topN}`,
-    );
+    return this.http.get<WeakestHabit[]>(`${this.apiUrl}/weakest-habits`, {
+      params: {
+        startDate,
+        endDate,
+        topN,
+      },
+    });
   }
 
   getCategoryPerformance(startDate: string, endDate: string): Observable<CategoryPerformance[]> {
-    return this.http.get<CategoryPerformance[]>(
-      `${this.apiUrl}/category-performance/${startDate}/${endDate}`,
-    );
+    return this.http.get<CategoryPerformance[]>(`${this.apiUrl}/category-performance`, {
+      params: {
+        startDate,
+        endDate,
+      },
+    });
   }
 }
