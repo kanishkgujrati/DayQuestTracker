@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -51,6 +51,7 @@ export class ProfileComponent implements OnInit {
     private store: Store,
     private profileService: ProfileService,
     private fb: FormBuilder,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -97,7 +98,7 @@ export class ProfileComponent implements OnInit {
   }
 
   loadProfile(): void {
-    this.isLoadingProfile = true;
+    this.isLoadingProfile = false;
     this.profileService.getProfile().subscribe({
       next: (profile) => {
         this.profile = profile;
@@ -106,11 +107,12 @@ export class ProfileComponent implements OnInit {
           timezone: profile.timezone,
         });
         this.isLoadingProfile = false;
-        console.log('Profile loaded', this.profile);
+        this.cdr.detectChanges();
       },
       error: () => {
         this.profileError = 'Failed to load profile.';
         this.isLoadingProfile = false;
+        this.cdr.detectChanges();
       },
     });
   }
