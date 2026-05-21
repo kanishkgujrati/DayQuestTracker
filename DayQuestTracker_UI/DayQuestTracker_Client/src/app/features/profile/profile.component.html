@@ -12,7 +12,8 @@
     </div>
   }
 
-  @if (!isLoadingProfile && profile; as profile) {
+  @if (!isLoadingProfile) {
+  @if (profile; as profile) {
     <!-- Profile Card -->
     <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
       <div class="flex items-center gap-4">
@@ -229,6 +230,7 @@
           </button>
         </form>
       </div>
+    }
     }
   }
 </div>

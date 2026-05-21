@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder,
-         FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../core/services/profile.service';
@@ -13,7 +12,7 @@ import { AuthUser } from '../../core/models/auth.models';
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
 })
 export class ProfileComponent implements OnInit {
   user$!: Observable<AuthUser | null>;
@@ -45,13 +44,13 @@ export class ProfileComponent implements OnInit {
     'America/Denver',
     'America/Los_Angeles',
     'Australia/Sydney',
-    'Pacific/Auckland'
+    'Pacific/Auckland',
   ];
 
   constructor(
     private store: Store,
     private profileService: ProfileService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {}
 
   ngOnInit(): void {
@@ -62,24 +61,33 @@ export class ProfileComponent implements OnInit {
 
   initForms(): void {
     this.profileForm = this.fb.group({
-      username: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(100),
-        Validators.pattern(/^[a-zA-Z0-9_]+$/)
-      ]],
-      timezone: ['UTC', Validators.required]
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(100),
+          Validators.pattern(/^[a-zA-Z0-9_ ]+$/),
+        ],
+      ],
+      timezone: ['UTC', Validators.required],
     });
 
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern(/^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/)
-      ]],
-      confirmNewPassword: ['', Validators.required]
-    }, { validators: this.passwordMatchValidator });
+    this.passwordForm = this.fb.group(
+      {
+        currentPassword: ['', Validators.required],
+        newPassword: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8),
+            Validators.pattern(/^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/),
+          ],
+        ],
+        confirmNewPassword: ['', Validators.required],
+      },
+      { validators: this.passwordMatchValidator },
+    );
   }
 
   passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
@@ -91,18 +99,19 @@ export class ProfileComponent implements OnInit {
   loadProfile(): void {
     this.isLoadingProfile = true;
     this.profileService.getProfile().subscribe({
-      next: profile => {
+      next: (profile) => {
         this.profile = profile;
         this.profileForm.patchValue({
           username: profile.username,
-          timezone: profile.timezone
+          timezone: profile.timezone,
         });
         this.isLoadingProfile = false;
+        console.log('Profile loaded', this.profile);
       },
       error: () => {
         this.profileError = 'Failed to load profile.';
         this.isLoadingProfile = false;
-      }
+      },
     });
   }
 
@@ -114,16 +123,16 @@ export class ProfileComponent implements OnInit {
     this.profileSuccess = null;
 
     this.profileService.updateProfile(this.profileForm.value).subscribe({
-      next: updated => {
+      next: (updated) => {
         this.profile = updated;
         this.profileSuccess = 'Profile updated successfully.';
         this.isSavingProfile = false;
-        setTimeout(() => this.profileSuccess = null, 3000);
+        setTimeout(() => (this.profileSuccess = null), 3000);
       },
-      error: err => {
+      error: (err) => {
         this.profileError = err.error?.error || 'Failed to update profile.';
         this.isSavingProfile = false;
-      }
+      },
     });
   }
 
@@ -139,17 +148,17 @@ export class ProfileComponent implements OnInit {
         this.passwordSuccess = 'Password changed. Please log in again.';
         this.passwordForm.reset();
         this.isSavingPassword = false;
-        setTimeout(() => this.passwordSuccess = null, 5000);
+        setTimeout(() => (this.passwordSuccess = null), 5000);
       },
-      error: err => {
+      error: (err) => {
         this.passwordError = err.error?.error || 'Failed to change password.';
         this.isSavingPassword = false;
-      }
+      },
     });
   }
 
   getLevelProgress(totalXP: number): number {
-    return (totalXP % 500) / 500 * 100;
+    return ((totalXP % 500) / 500) * 100;
   }
 
   getXPToNextLevel(totalXP: number): number {
@@ -160,7 +169,7 @@ export class ProfileComponent implements OnInit {
     return new Date(dateStr).toLocaleDateString('en', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 }
