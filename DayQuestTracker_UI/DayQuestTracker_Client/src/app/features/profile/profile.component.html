@@ -12,13 +12,22 @@
         <!-- Avatar -->
         <!-- Avatar with upload -->
         <div class="relative flex-shrink-0">
-          @if (profile.profilePhotoUrl) {
+          @if (photoPreviewUrl) {
+            <!-- Local preview while uploading -->
             <img
-              [src]="'http://localhost:8080' + profile.profilePhotoUrl"
+              [src]="photoPreviewUrl"
+              alt="Uploading..."
+              class="w-16 h-16 rounded-full object-cover border-2 border-yellow-500 opacity-70"
+            />
+          } @else if (profile.profilePhotoUrl) {
+            <!-- Server image after upload -->
+            <img
+              [src]="apiBaseUrl + profile.profilePhotoUrl"
               alt="Profile photo"
               class="w-16 h-16 rounded-full object-cover border-2 border-sky-500"
             />
           } @else {
+            <!-- Default letter avatar -->
             <div
               class="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-2xl font-bold text-white"
             >
@@ -26,15 +35,20 @@
             </div>
           }
 
-          <!-- Upload button overlay -->
+          <!-- Upload button -->
           <label
             class="absolute bottom-0 right-0 w-6 h-6 bg-sky-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-sky-500 transition border-2 border-slate-800"
           >
-            <span class="text-white text-xs">+</span>
+            @if (isUploadingPhoto) {
+              <span class="text-white text-xs">...</span>
+            } @else {
+              <span class="text-white text-xs">+</span>
+            }
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
               class="hidden"
+              [disabled]="isUploadingPhoto"
               (change)="onPhotoSelected($event)"
             />
           </label>

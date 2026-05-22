@@ -7,6 +7,7 @@ import { ProfileService } from '../../core/services/profile.service';
 import { UserProfile } from '../../core/models/profile.models';
 import { selectCurrentUser } from '../../store/auth/auth.selectors';
 import { AuthUser } from '../../core/models/auth.models';
+import { environment } from '../../../environments/environments';
 
 @Component({
   selector: 'app-profile',
@@ -16,6 +17,8 @@ import { AuthUser } from '../../core/models/auth.models';
 })
 export class ProfileComponent implements OnInit {
   user$!: Observable<AuthUser | null>;
+
+  apiBaseUrl = environment.apiUrl.replace('/api', '');
 
   profile: UserProfile | null = null;
   isLoadingProfile = false;
@@ -29,6 +32,7 @@ export class ProfileComponent implements OnInit {
 
   photoUrl: string | null = null;
   isUploadingPhoto = false;
+  photoPreviewUrl: string | null = null;
   photoError: string | null = null;
 
   profileForm!: FormGroup;
@@ -184,16 +188,31 @@ export class ProfileComponent implements OnInit {
     if (!input.files?.length) return;
 
     const file = input.files[0];
+
+    // Show preview immediately before upload completes
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // Temporary local preview while upload is in progress
+      this.photoPreviewUrl = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+
     this.isUploadingPhoto = true;
     this.photoError = null;
 
     this.profileService.uploadPhoto(file).subscribe({
       next: (response) => {
-        this.photoUrl = response.photoUrl;
+        // Update component state
         if (this.profile) this.profile.profilePhotoUrl = response.photoUrl;
+
+        // Clear local preview — now using the server URL
+        this.photoPreviewUrl = null;
         this.isUploadingPhoto = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
+        this.photoPreviewUrl = null;
+        this.cdr.detectChanges();
         this.photoError = err.error?.error || 'Failed to upload photo.';
         this.isUploadingPhoto = false;
       },
