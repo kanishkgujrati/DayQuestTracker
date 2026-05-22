@@ -34,6 +34,10 @@ namespace DayQuestTracker.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasDefaultValue(true);
 
+            builder.Property(u => u.ProfilePhotoUrl)
+                .HasMaxLength(500)
+                .IsRequired(false);
+
             // Level is computed — never mapped to a column
             builder.Ignore(u => u.Level);
 

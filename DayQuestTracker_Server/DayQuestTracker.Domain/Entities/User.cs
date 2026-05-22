@@ -25,5 +25,8 @@ namespace DayQuestTracker.Domain.Entities
         public ICollection<DailyScore> DailyScores { get; set; } = new List<DailyScore>();
         public ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
         public ICollection<XPEvent> XPEvents { get; set; } = new List<XPEvent>();
+
+        // Profile Photo
+        public string? ProfilePhotoUrl { get; set; }
     }
 }

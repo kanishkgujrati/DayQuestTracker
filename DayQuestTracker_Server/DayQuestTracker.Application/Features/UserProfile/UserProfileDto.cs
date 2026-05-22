@@ -8,6 +8,7 @@
         public string Timezone { get; set; } = string.Empty;
         public int TotalXP { get; set; }
         public int Level { get; set; }
+        public string? ProfilePhotoUrl { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

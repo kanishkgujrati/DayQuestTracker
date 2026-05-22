@@ -109,6 +109,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
 app.UseAuthorization();

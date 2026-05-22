@@ -19,10 +19,7 @@ namespace DayQuestTracker.WebAPI.Controllers
             _mediator = mediator;
         }
 
-        private Guid GetUserId() =>
-            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("sub")
-                ?? throw new UnauthorizedAccessException());
+        private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub") ?? throw new UnauthorizedAccessException());
 
         [HttpGet]
         public async Task<IActionResult> GetProfile()
@@ -53,9 +50,49 @@ namespace DayQuestTracker.WebAPI.Controllers
                 ? Ok(new { message = "Password changed successfully. Please log in again." })
                 : BadRequest(new { error = result.Error });
         }
+
+        [HttpPost("upload-photo")]
+        public async Task<IActionResult> UploadPhoto(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { error = "No file provided." });
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                return BadRequest(new { error = "Only JPEG, PNG and WebP images are allowed." });
+
+            // Validate file size — max 2MB
+            if (file.Length > 2 * 1024 * 1024)
+                return BadRequest(new { error = "File size cannot exceed 2MB." });
+
+            var userId = GetUserId();
+            var uploadsFolder = Path.Combine(
+                Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+
+            Directory.CreateDirectory(uploadsFolder);
+
+            // Use userId as filename — overwrites previous photo automatically
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            var fileName = $"{userId}{extension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Save URL to DB
+            var photoUrl = $"/uploads/profiles/{fileName}";
+            var result = await _mediator.Send(
+                new UpdateProfilePhotoCommand(userId, photoUrl));
+
+            return result.IsSuccess
+                ? Ok(new { photoUrl })
+                : BadRequest(new { error = result.Error });
+        }
+
+        public record UpdateProfileRequest(string? Username, string? Timezone);
+        public record ChangePasswordRequest(string CurrentPassword, string NewPassword, string ConfirmNewPassword);
     }
-
-    public record UpdateProfileRequest(string? Username, string? Timezone);
-    public record ChangePasswordRequest(string CurrentPassword,string NewPassword,string ConfirmNewPassword);
-
 }

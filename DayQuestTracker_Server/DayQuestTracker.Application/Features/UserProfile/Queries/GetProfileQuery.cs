@@ -34,7 +34,8 @@ namespace DayQuestTracker.Application.Features.UserProfile.Queries
                 Timezone = user.Timezone,
                 TotalXP = user.TotalXP,
                 Level = user.Level,
-                CreatedAt = user.CreatedAt
+                CreatedAt = user.CreatedAt,
+                ProfilePhotoUrl = user.ProfilePhotoUrl
             });
         }
     }
