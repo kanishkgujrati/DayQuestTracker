@@ -4,6 +4,7 @@ using DayQuestTracker.Domain.Entities;
 using DayQuestTracker.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using DayQuestTracker.Application.Common.Services;
 
 namespace DayQuestTracker.Application.Features.Completions.Commands
 {
@@ -84,57 +85,28 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
             return Result<bool>.Success(true);
         }
 
-        private async Task RecalculateStreakAsync(Guid taskId,Guid userId,CancellationToken cancellationToken)
+        public async Task RecalculateStreakAsync(Guid taskId,Guid userId,CancellationToken cancellationToken)
         {
-            var streak = await _context.UserTaskStreaks
-                .FirstOrDefaultAsync(s => s.TaskId == taskId &&
-                                          s.UserId == userId,
-                                     cancellationToken);
+            var streak = await _context.UserTaskStreaks.FirstOrDefaultAsync(s => s.TaskId == taskId && s.UserId == userId, cancellationToken);
 
             if (streak is null) return;
 
+            // Fetch task with schedules for frequency-aware calculation
+            var task = await _context.Tasks
+                .Include(t => t.TaskSchedules)
+                .FirstOrDefaultAsync(t => t.Id == taskId, cancellationToken);
+
+            if (task is null) return;
+
+            // Fetch remaining completed dates after deletion
             var allCompletedDates = await _context.TaskCompletions
-               .Where(tc => tc.HabitTaskId == taskId &&
-                            tc.UserId == userId &&
-                            tc.Status == CompletionStatus.Completed)
-               .Select(tc => tc.CompletionDate)
-               .OrderByDescending(d => d)
-               .ToListAsync(cancellationToken);
+                .Where(tc => tc.HabitTaskId == taskId &&
+                             tc.UserId == userId &&
+                             tc.Status == CompletionStatus.Completed)
+                .Select(tc => tc.CompletionDate)
+                .ToListAsync(cancellationToken);
 
-            if (!allCompletedDates.Any())
-            {
-                streak.CurrentStreak = 0;
-                streak.LastCompletedDate = null;
-                streak.UpdatedAt = DateTime.UtcNow;
-                return;
-            }
-
-            streak.LastCompletedDate = allCompletedDates.First();
-
-            var currentStreak = 0;
-            var checkDate = allCompletedDates.First();
-
-            foreach (var date in allCompletedDates)
-            {
-                if (date == checkDate)
-                {
-                    currentStreak++;
-                    checkDate = checkDate.AddDays(-1);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            streak.CurrentStreak = currentStreak;
-
-            // LongestStreak never decreases on undo
-            // It represents the best streak ever achieved
-            if (streak.CurrentStreak > streak.LongestStreak)
-                streak.LongestStreak = streak.CurrentStreak;
-
-            streak.UpdatedAt = DateTime.UtcNow;
+            StreakCalculator.Recalculate(streak, task, allCompletedDates);
         }
 
         private async Task RecalculateDailyScoreAsync(Guid userId,DateOnly date,CancellationToken cancellationToken)

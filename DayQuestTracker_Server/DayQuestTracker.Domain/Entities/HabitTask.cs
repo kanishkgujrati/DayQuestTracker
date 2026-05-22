@@ -28,5 +28,36 @@ namespace DayQuestTracker.Domain.Entities
         public ICollection<HabitTaskSchedule> TaskSchedules { get; set; } = new List<HabitTaskSchedule>();
         public ICollection<HabitTaskCompletion> TaskCompletions { get; set; } = new List<HabitTaskCompletion>();
         public UserTaskStreak? Streak { get; set; }
+
+        // Returns all dates this task was scheduled to run up to a given end date
+        public List<DateOnly> GetScheduledDates(DateOnly endDate)
+        {
+            var scheduledDates = new List<DateOnly>();
+            var startDate = DateOnly.FromDateTime(CreatedAt);
+            var current = startDate;
+
+            while (current <= endDate)
+            {
+                if (FrequencyType == Enums.FrequencyType.Daily)
+                {
+                    scheduledDates.Add(current);
+                }
+                else
+                {
+                    // Weekly/Custom — check if this day matches TaskSchedules
+                    // Convert DayOfWeek to 0=Mon, 6=Sun
+                    var dayOfWeek = (int)current.DayOfWeek == 0
+                        ? 6
+                        : (int)current.DayOfWeek - 1;
+
+                    if (TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
+                        scheduledDates.Add(current);
+                }
+
+                current = current.AddDays(1);
+            }
+
+            return scheduledDates;
+        }
     }
 }
