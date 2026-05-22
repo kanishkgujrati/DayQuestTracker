@@ -27,6 +27,10 @@ export class ProfileComponent implements OnInit {
   passwordError: string | null = null;
   passwordSuccess: string | null = null;
 
+  photoUrl: string | null = null;
+  isUploadingPhoto = false;
+  photoError: string | null = null;
+
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
 
@@ -172,6 +176,27 @@ export class ProfileComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+    });
+  }
+
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    this.isUploadingPhoto = true;
+    this.photoError = null;
+
+    this.profileService.uploadPhoto(file).subscribe({
+      next: (response) => {
+        this.photoUrl = response.photoUrl;
+        if (this.profile) this.profile.profilePhotoUrl = response.photoUrl;
+        this.isUploadingPhoto = false;
+      },
+      error: (err) => {
+        this.photoError = err.error?.error || 'Failed to upload photo.';
+        this.isUploadingPhoto = false;
+      },
     });
   }
 }

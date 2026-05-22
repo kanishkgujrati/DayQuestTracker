@@ -10,10 +10,34 @@
     <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
       <div class="flex items-center gap-4">
         <!-- Avatar -->
-        <div
-          class="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
-        >
-          {{ profile.username?.[0]?.toUpperCase() }}
+        <!-- Avatar with upload -->
+        <div class="relative flex-shrink-0">
+          @if (profile.profilePhotoUrl) {
+            <img
+              [src]="'http://localhost:8080' + profile.profilePhotoUrl"
+              alt="Profile photo"
+              class="w-16 h-16 rounded-full object-cover border-2 border-sky-500"
+            />
+          } @else {
+            <div
+              class="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-2xl font-bold text-white"
+            >
+              {{ profile.username[0].toUpperCase() }}
+            </div>
+          }
+
+          <!-- Upload button overlay -->
+          <label
+            class="absolute bottom-0 right-0 w-6 h-6 bg-sky-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-sky-500 transition border-2 border-slate-800"
+          >
+            <span class="text-white text-xs">+</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              class="hidden"
+              (change)="onPhotoSelected($event)"
+            />
+          </label>
         </div>
 
         <!-- Info -->

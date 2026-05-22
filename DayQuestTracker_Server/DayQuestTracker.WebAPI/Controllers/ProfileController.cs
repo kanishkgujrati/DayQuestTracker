@@ -84,8 +84,7 @@ namespace DayQuestTracker.WebAPI.Controllers
 
             // Save URL to DB
             var photoUrl = $"/uploads/profiles/{fileName}";
-            var result = await _mediator.Send(
-                new UpdateProfilePhotoCommand(userId, photoUrl));
+            var result = await _mediator.Send(new UpdateProfilePhotoCommand(userId, photoUrl));
 
             return result.IsSuccess
                 ? Ok(new { photoUrl })

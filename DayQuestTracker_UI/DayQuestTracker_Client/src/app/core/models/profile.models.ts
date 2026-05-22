@@ -6,6 +6,7 @@ export interface UserProfile {
   totalXP: number;
   level: number;
   createdAt: string;
+  profilePhotoUrl: string | null;
 }
 
 export interface UpdateProfileRequest {

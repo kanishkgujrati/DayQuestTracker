@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 namespace DayQuestTracker.Application.Features.UserProfile.Commands
 {
     public record UpdateProfileCommand(Guid UserId, string? Username, string? Timezone) : IRequest<Result<UserProfileDto>>;
-    public record UpdateProfilePhotoCommand(Guid UserId, string PhotoUrl) : IRequest<Result<bool>>;
 
     public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand, Result<UserProfileDto>>
     {
