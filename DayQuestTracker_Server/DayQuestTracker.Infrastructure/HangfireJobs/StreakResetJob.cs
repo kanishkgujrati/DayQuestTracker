@@ -37,10 +37,11 @@ namespace DayQuestTracker.Infrastructure.HangfireJobs
             {
                 var task = streak.Task;
 
+                if (DateOnly.FromDateTime(task.CreatedAt) > yesterday)
+                    continue;
+
                 // Check if task was scheduled for yesterday
-                var dayOfWeek = (int)yesterday.DayOfWeek == 0
-                    ? 6
-                    : (int)yesterday.DayOfWeek - 1;
+                var dayOfWeek = (int)yesterday.DayOfWeek == 0 ? 6 : (int)yesterday.DayOfWeek - 1;
 
                 var wasScheduledYesterday =
                     task.FrequencyType == Domain.Enums.FrequencyType.Daily ||

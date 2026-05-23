@@ -155,6 +155,7 @@ export class ProfileComponent implements OnInit {
               },
             }),
           );
+          localStorage.setItem('user', JSON.stringify(profile));
         });
         setTimeout(() => (this.profileSuccess = null), 3000);
       },
@@ -232,6 +233,7 @@ export class ProfileComponent implements OnInit {
             },
           }),
         );
+        localStorage.setItem('user', JSON.stringify(response));
 
         // Clear local preview — now using the server URL
         this.photoPreviewUrl = null;

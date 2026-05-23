@@ -43,6 +43,7 @@ export class AuthEffects {
               username: response.username,
               level: response.level,
               totalXP: response.totalXP,
+              profilePhotoUrl: response.profilePhotoUrl,
             }),
           );
           this.router.navigate(['/dashboard']);

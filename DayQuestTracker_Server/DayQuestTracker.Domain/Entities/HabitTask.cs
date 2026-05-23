@@ -33,6 +33,8 @@ namespace DayQuestTracker.Domain.Entities
         public List<DateOnly> GetScheduledDates(DateOnly endDate)
         {
             var scheduledDates = new List<DateOnly>();
+
+            // Start from task creation date, not from the beginning of time
             var startDate = DateOnly.FromDateTime(CreatedAt);
             var current = startDate;
 
@@ -44,11 +46,7 @@ namespace DayQuestTracker.Domain.Entities
                 }
                 else
                 {
-                    // Weekly/Custom — check if this day matches TaskSchedules
-                    // Convert DayOfWeek to 0=Mon, 6=Sun
-                    var dayOfWeek = (int)current.DayOfWeek == 0
-                        ? 6
-                        : (int)current.DayOfWeek - 1;
+                    var dayOfWeek = (int)current.DayOfWeek == 0 ? 6 : (int)current.DayOfWeek - 1;
 
                     if (TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
                         scheduledDates.Add(current);

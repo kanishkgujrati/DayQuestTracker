@@ -120,7 +120,7 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
             var dayOfWeek = (int)date.DayOfWeek == 0 ? 6 : (int)date.DayOfWeek - 1;
 
             var totalTasks = await _context.Tasks
-                .Where(t => t.UserId == userId && t.DeletedAt == null)
+                .Where(t => t.UserId == userId && DateOnly.FromDateTime(t.CreatedAt) <= date && (t.DeletedAt == null || DateOnly.FromDateTime(t.DeletedAt.Value) > date))
                 .Where(t => t.FrequencyType == Domain.Enums.FrequencyType.Daily ||
                             t.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
                 .CountAsync(cancellationToken);

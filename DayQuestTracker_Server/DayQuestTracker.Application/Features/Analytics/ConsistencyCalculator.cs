@@ -48,9 +48,20 @@ namespace DayQuestTracker.Application.Features.Analytics
         private static List<DateOnly> GetScheduledDays(HabitTask task,DateOnly startDate,DateOnly endDate)
         {
             var scheduledDays = new List<DateOnly>();
-            var current = startDate;
+            var taskCreatedDate = DateOnly.FromDateTime(task.CreatedAt);
+            var effectiveStartDate = startDate < taskCreatedDate ? taskCreatedDate : startDate;
 
-            while (current <= endDate)
+            // Task cannot have scheduled days after it was soft deleted
+            DateOnly? taskDeletedDate = task.DeletedAt.HasValue ? DateOnly.FromDateTime(task.DeletedAt.Value) : null;
+
+            var effectiveEndDate = taskDeletedDate.HasValue && taskDeletedDate < endDate ? taskDeletedDate.Value : endDate;
+
+            if (effectiveStartDate > effectiveEndDate)
+                return scheduledDays;
+
+            var current = effectiveStartDate;
+
+            while (current <= effectiveEndDate)
             {
                 if (task.FrequencyType == FrequencyType.Daily)
                 {
@@ -60,9 +71,7 @@ namespace DayQuestTracker.Application.Features.Analytics
                 {
                     // Weekly/Custom — check if this day of week is scheduled
                     // Convert DayOfWeek to 0=Mon, 6=Sun
-                    var dayOfWeek = (int)current.DayOfWeek == 0
-                        ? 6
-                        : (int)current.DayOfWeek - 1;
+                    var dayOfWeek = (int)current.DayOfWeek == 0 ? 6 : (int)current.DayOfWeek - 1;
 
                     if (task.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
                         scheduledDays.Add(current);
