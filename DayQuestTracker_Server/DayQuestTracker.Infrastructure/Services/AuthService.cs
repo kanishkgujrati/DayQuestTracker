@@ -87,7 +87,8 @@ namespace DayQuestTracker.Infrastructure.Services
                 UserId = user.Id,
                 Username = user.Username,
                 Level = user.Level,
-                TotalXP = user.TotalXP
+                TotalXP = user.TotalXP,
+                ProfilePhotoUrl = user.ProfilePhotoUrl
             };
         }
 
@@ -114,7 +115,8 @@ namespace DayQuestTracker.Infrastructure.Services
                 UserId = user.Id,
                 Username = user.Username,
                 Level = user.Level,
-                TotalXP = user.TotalXP
+                TotalXP = user.TotalXP,
+                ProfilePhotoUrl = user.ProfilePhotoUrl
             };
         }
     }

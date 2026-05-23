@@ -18,6 +18,7 @@ export interface AuthResponse {
   username: string;
   level: number;
   totalXP: number;
+  profilePhotoUrl: string;
 }
 
 export interface AuthState {
@@ -33,4 +34,5 @@ export interface AuthUser {
   username: string;
   level: number;
   totalXP: number;
+  profilePhotoUrl: string | null;
 }

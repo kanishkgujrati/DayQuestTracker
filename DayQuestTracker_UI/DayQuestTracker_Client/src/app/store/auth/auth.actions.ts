@@ -1,5 +1,10 @@
 import { createAction, props } from '@ngrx/store';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../../core/models/auth.models';
+import {
+  AuthResponse,
+  AuthUser,
+  LoginRequest,
+  RegisterRequest,
+} from '../../core/models/auth.models';
 
 // Login
 export const login = createAction('[Auth] Login', props<{ request: LoginRequest }>());
@@ -26,3 +31,8 @@ export const logout = createAction('[Auth] Logout');
 
 // Initialize auth from localStorage on app start
 export const initializeAuth = createAction('[Auth] Initialize');
+
+export const updateCurrentUser = createAction(
+  '[Auth] Update Current User',
+  props<{ user: AuthUser }>(),
+);

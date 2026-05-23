@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import * as AuthActions from './auth.actions';
 import { AuthState } from '../../core/models/auth.models';
+import { updateCurrentUser } from './auth.actions';
 
 export const initialState: AuthState = {
   user: null,
@@ -28,6 +29,7 @@ export const authReducer = createReducer(
     user: {
       userId: response.userId,
       username: response.username,
+      profilePhotoUrl: response.profilePhotoUrl,
       level: response.level,
       totalXP: response.totalXP,
     },
@@ -57,6 +59,7 @@ export const authReducer = createReducer(
       username: response.username,
       level: response.level,
       totalXP: response.totalXP,
+      profilePhotoUrl: response.profilePhotoUrl,
     },
     error: null,
   })),
@@ -84,4 +87,9 @@ export const authReducer = createReducer(
       user,
     };
   }),
+
+  on(updateCurrentUser, (state, { user }) => ({
+    ...state,
+    user,
+  })),
 );

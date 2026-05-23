@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { logout } from '../../../store/auth/auth.actions';
+import { environment } from '../../../../environments/environments';
 import {
   selectCurrentUser,
   selectUserLevel,
@@ -22,12 +23,13 @@ export class LayoutComponent implements OnInit {
   level$!: Observable<number>;
   xp$!: Observable<number>;
 
+  apiBaseUrl = environment.apiUrl.replace('/api', '');
+
   navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/categories', label: 'Categories', icon: '📁' },
     { path: '/tasks', label: 'Tasks', icon: '✅' },
     { path: '/analytics', label: 'Analytics', icon: '📊' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
   constructor(private store: Store) {}

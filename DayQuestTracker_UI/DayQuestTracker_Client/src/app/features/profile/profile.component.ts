@@ -8,6 +8,7 @@ import { UserProfile } from '../../core/models/profile.models';
 import { selectCurrentUser } from '../../store/auth/auth.selectors';
 import { AuthUser } from '../../core/models/auth.models';
 import { environment } from '../../../environments/environments';
+import { updateCurrentUser } from '../../store/auth/auth.actions';
 
 @Component({
   selector: 'app-profile',
@@ -19,6 +20,8 @@ export class ProfileComponent implements OnInit {
   user$!: Observable<AuthUser | null>;
 
   apiBaseUrl = environment.apiUrl.replace('/api', '');
+
+  currentUser: AuthUser | null = null;
 
   profile: UserProfile | null = null;
   isLoadingProfile = false;
@@ -64,6 +67,9 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.user$ = this.store.select(selectCurrentUser);
+    this.user$.subscribe((user) => {
+      this.currentUser = user;
+    });
     this.initForms();
     this.loadProfile();
   }
@@ -137,6 +143,19 @@ export class ProfileComponent implements OnInit {
         this.profile = updated;
         this.profileSuccess = 'Profile updated successfully.';
         this.isSavingProfile = false;
+        this.profileService.getProfile().subscribe((profile) => {
+          this.store.dispatch(
+            updateCurrentUser({
+              user: {
+                ...this.currentUser!,
+                username: profile.username,
+                profilePhotoUrl: profile.profilePhotoUrl,
+                level: profile.level,
+                totalXP: profile.totalXP,
+              },
+            }),
+          );
+        });
         setTimeout(() => (this.profileSuccess = null), 3000);
       },
       error: (err) => {
@@ -204,6 +223,15 @@ export class ProfileComponent implements OnInit {
       next: (response) => {
         // Update component state
         if (this.profile) this.profile.profilePhotoUrl = response.photoUrl;
+
+        this.store.dispatch(
+          updateCurrentUser({
+            user: {
+              ...this.currentUser!,
+              profilePhotoUrl: response.photoUrl,
+            },
+          }),
+        );
 
         // Clear local preview — now using the server URL
         this.photoPreviewUrl = null;
