@@ -105,12 +105,12 @@
         <!-- Frequency Type -->
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2"> Frequency </label>
-          <div class="flex gap-2">
-            @for (type of [1, 2, 3]; track type) {
+          <div class="flex gap-2 flex-wrap">
+            @for (type of [1, 2, 3, 4, 5]; track type) {
               <button
                 type="button"
                 (click)="taskForm.patchValue({ frequencyType: type })"
-                class="flex-1 py-2 rounded-lg border text-sm font-medium transition"
+                class="px-3 py-2 rounded-lg border text-sm font-medium transition"
                 [class.bg-sky-600]="taskForm.get('frequencyType')?.value === type"
                 [class.border-sky-500]="taskForm.get('frequencyType')?.value === type"
                 [class.text-white]="taskForm.get('frequencyType')?.value === type"
@@ -125,7 +125,10 @@
         </div>
 
         <!-- Scheduled Days — Weekly and Custom only -->
-        @if (taskForm.get('frequencyType')?.value !== FrequencyType.Daily) {
+        @if (
+          taskForm.get('frequencyType')?.value === FrequencyType.Weekly ||
+          taskForm.get('frequencyType')?.value === FrequencyType.Custom
+        ) {
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2"> Scheduled Days </label>
             <div class="flex gap-2">

@@ -107,8 +107,12 @@ export class TasksComponent implements OnInit {
 
     const formValue = this.taskForm.value;
 
-    // Clean up values based on frequency type
-    if (formValue.frequencyType === FrequencyType.Daily) {
+    // Clean up based on frequency type
+    if (
+      [FrequencyType.Daily, FrequencyType.OnceAWeek, FrequencyType.OnceAMonth].includes(
+        formValue.frequencyType,
+      )
+    ) {
       formValue.scheduledDays = null;
       formValue.targetPerWeek = null;
     } else if (formValue.frequencyType === FrequencyType.Weekly) {
@@ -116,12 +120,7 @@ export class TasksComponent implements OnInit {
     }
 
     if (this.editingTask) {
-      this.store.dispatch(
-        updateTask({
-          id: this.editingTask.id,
-          request: formValue,
-        }),
-      );
+      this.store.dispatch(updateTask({ id: this.editingTask.id, request: formValue }));
     } else {
       this.store.dispatch(createTask({ request: formValue }));
     }
@@ -165,6 +164,10 @@ export class TasksComponent implements OnInit {
         return 'Weekly';
       case FrequencyType.Custom:
         return 'Custom';
+      case FrequencyType.OnceAWeek:
+        return 'Once a Week';
+      case FrequencyType.OnceAMonth:
+        return 'Once a Month';
     }
   }
 

@@ -1,7 +1,9 @@
 export enum FrequencyType {
   Daily = 1,
   Weekly = 2,
-  Custom = 3,
+  Custom = 3, 
+  OnceAWeek = 4,
+  OnceAMonth = 5,
 }
 
 export enum CompletionStatus {

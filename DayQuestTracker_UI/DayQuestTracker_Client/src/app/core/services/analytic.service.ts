@@ -64,4 +64,12 @@ export class AnalyticsService {
       },
     });
   }
+
+  getWeeklySummary(date: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/weekly-summary/${date}`);
+  }
+
+  getMonthlySummary(year: number, month: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/monthly-summary/${year}/${month}`);
+  }
 }
