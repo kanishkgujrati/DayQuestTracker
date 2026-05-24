@@ -23,7 +23,6 @@ namespace DayQuestTracker.Infrastructure.HangfireJobs
 
             _logger.LogInformation("StreakResetJob running for {Date}", yesterday);
 
-            // Get all active streaks with CurrentStreak > 0
             var streaksToCheck = await _context.UserTaskStreaks
                 .Include(s => s.Task)
                     .ThenInclude(t => t.TaskSchedules)
@@ -36,27 +35,69 @@ namespace DayQuestTracker.Infrastructure.HangfireJobs
             foreach (var streak in streaksToCheck)
             {
                 var task = streak.Task;
+                var shouldReset = false;
 
-                if (DateOnly.FromDateTime(task.CreatedAt) > yesterday)
-                    continue;
+                if (task.FrequencyType == FrequencyType.OnceAWeek)
+                {
+                    // Reset only if yesterday was Sunday and no completion this week
+                    if (yesterday.DayOfWeek == DayOfWeek.Sunday)
+                    {
+                        var monday = yesterday.AddDays(-6);
+                        var hadCompletion = await _context.TaskCompletions
+                            .AnyAsync(tc => tc.HabitTaskId == streak.TaskId &&
+                                            tc.UserId == streak.UserId &&
+                                            tc.CompletionDate >= monday &&
+                                            tc.CompletionDate <= yesterday &&
+                                            tc.Status == CompletionStatus.Completed);
 
-                // Check if task was scheduled for yesterday
-                var dayOfWeek = (int)yesterday.DayOfWeek == 0 ? 6 : (int)yesterday.DayOfWeek - 1;
+                        shouldReset = !hadCompletion;
+                    }
+                }
+                else if (task.FrequencyType == FrequencyType.OnceAMonth)
+                {
+                    // Reset only if yesterday was last day of month
+                    var lastDayOfMonth = new DateOnly(
+                        yesterday.Year,
+                        yesterday.Month,
+                        DateTime.DaysInMonth(yesterday.Year, yesterday.Month));
 
-                var wasScheduledYesterday =
-                    task.FrequencyType == Domain.Enums.FrequencyType.Daily ||
-                    task.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek);
+                    if (yesterday == lastDayOfMonth)
+                    {
+                        var firstOfMonth = new DateOnly(yesterday.Year, yesterday.Month, 1);
+                        var hadCompletion = await _context.TaskCompletions
+                            .AnyAsync(tc => tc.HabitTaskId == streak.TaskId &&
+                                            tc.UserId == streak.UserId &&
+                                            tc.CompletionDate >= firstOfMonth &&
+                                            tc.CompletionDate <= yesterday &&
+                                            tc.Status == CompletionStatus.Completed);
 
-                if (!wasScheduledYesterday) continue;
+                        shouldReset = !hadCompletion;
+                    }
+                }
+                else
+                {
+                    // Daily, Weekly, Custom — existing day-based logic
+                    var dayOfWeek = (int)yesterday.DayOfWeek == 0
+                        ? 6
+                        : (int)yesterday.DayOfWeek - 1;
 
-                // Check if completed yesterday
-                var hadCompletion = await _context.TaskCompletions
-                    .AnyAsync(tc => tc.HabitTaskId == streak.TaskId &&
-                                    tc.UserId == streak.UserId &&
-                                    tc.CompletionDate == yesterday &&
-                                    tc.Status == Domain.Enums.CompletionStatus.Completed);
+                    var wasScheduledYesterday =
+                        task.FrequencyType == FrequencyType.Daily ||
+                        task.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek);
 
-                if (!hadCompletion)
+                    if (wasScheduledYesterday)
+                    {
+                        var hadCompletion = await _context.TaskCompletions
+                            .AnyAsync(tc => tc.HabitTaskId == streak.TaskId &&
+                                            tc.UserId == streak.UserId &&
+                                            tc.CompletionDate == yesterday &&
+                                            tc.Status == CompletionStatus.Completed);
+
+                        shouldReset = !hadCompletion;
+                    }
+                }
+
+                if (shouldReset)
                 {
                     streak.CurrentStreak = 0;
                     streak.UpdatedAt = DateTime.UtcNow;

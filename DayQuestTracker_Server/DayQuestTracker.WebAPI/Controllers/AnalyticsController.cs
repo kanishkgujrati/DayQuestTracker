@@ -85,5 +85,29 @@ namespace DayQuestTracker.WebAPI.Controllers
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
+
+        [HttpGet("weekly-summary/{date}")]
+        public async Task<IActionResult> GetWeeklySummary(string date)
+        {
+            if (!DateOnly.TryParse(date, out var parsedDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
+            var result = await _mediator.Send(
+                new GetWeeklySummaryQuery(GetUserId(), parsedDate));
+
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
+        }
+
+        [HttpGet("monthly-summary/{year}/{month}")]
+        public async Task<IActionResult> GetMonthlySummary(int year, int month)
+        {
+            if (month < 1 || month > 12)
+                return BadRequest(new { error = "Month must be between 1 and 12." });
+
+            var result = await _mediator.Send(
+                new GetMonthlySummaryQuery(GetUserId(), year, month));
+
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
+        }
     }
 }

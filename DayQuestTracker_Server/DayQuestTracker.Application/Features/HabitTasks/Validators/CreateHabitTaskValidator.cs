@@ -25,6 +25,29 @@ namespace DayQuestTracker.Application.Features.HabitTasks.Validators
             RuleFor(x => x.FrequencyType)
                 .IsInEnum().WithMessage("Invalid FrequencyType.");
 
+            // OnceAWeek and OnceAMonth must NOT have ScheduledDays or TargetPerWeek
+            RuleFor(x => x.ScheduledDays)
+                .Null().WithMessage("OnceAWeek and OnceAMonth tasks do not require scheduled days.")
+                .When(x => x.FrequencyType == FrequencyType.OnceAWeek ||
+                           x.FrequencyType == FrequencyType.OnceAMonth);
+
+            RuleFor(x => x.TargetPerWeek)
+                .Null().WithMessage("TargetPerWeek is not applicable for this frequency type.")
+                .When(x => x.FrequencyType == FrequencyType.OnceAWeek ||
+                           x.FrequencyType == FrequencyType.OnceAMonth);
+
+            // Daily must not have ScheduledDays — already exists, update condition
+            RuleFor(x => x.ScheduledDays)
+                .Null().WithMessage("Daily tasks do not require scheduled days.")
+                .When(x => x.FrequencyType == FrequencyType.Daily);
+
+            // Weekly/Custom require ScheduledDays — already exists, keep as is
+            RuleFor(x => x.ScheduledDays)
+                .NotNull().WithMessage("Scheduled days are required for Weekly and Custom tasks.")
+                .Must(days => days!.Any()).WithMessage("At least one scheduled day is required.")
+                .When(x => x.FrequencyType == FrequencyType.Weekly ||
+                           x.FrequencyType == FrequencyType.Custom);
+
             // Custom requires TargetPerWeek
             RuleFor(x => x.TargetPerWeek)
                 .NotNull().WithMessage("TargetPerWeek is required for Custom frequency.")
