@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { DailyTaskView, CompletionStatus } from '../../core/models/task.models';
+import { AnalyticsService } from '../../core/services/analytic.service';
 import {
   loadDailyTasks,
   logCompletion,
@@ -19,7 +20,7 @@ import {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -28,12 +29,18 @@ export class DashboardComponent implements OnInit {
   isLoading$!: Observable<boolean>;
   progress$!: Observable<any>;
 
+  weeklySummary: any = null;
+  monthlySummary: any = null;
+
   CompletionStatus = CompletionStatus;
 
   // Week days for date navigation
   weekDays: { date: string; label: string; dayName: string }[] = [];
 
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private analyticsService: AnalyticsService,
+  ) {}
 
   ngOnInit(): void {
     this.dailyTasks$ = this.store.select(selectDailyTasks);
@@ -41,11 +48,27 @@ export class DashboardComponent implements OnInit {
     this.isLoading$ = this.store.select(selectDashboardLoading);
     this.progress$ = this.store.select(selectDailyProgress);
 
+    this.loadSummaries();
     this.generateWeekDays();
 
     // Load today's tasks on init
     const today = new Date().toISOString().split('T')[0];
     this.store.dispatch(loadDailyTasks({ date: today }));
+  }
+
+  loadSummaries(): void {
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+
+    this.analyticsService.getWeeklySummary(today).subscribe({
+      next: (data) => (this.weeklySummary = data),
+      error: () => {},
+    });
+
+    this.analyticsService.getMonthlySummary(now.getFullYear(), now.getMonth() + 1).subscribe({
+      next: (data) => (this.monthlySummary = data),
+      error: () => {},
+    });
   }
 
   generateWeekDays(): void {

@@ -151,4 +151,80 @@
       </div>
     }
   }
+  <!-- Weekly and Monthly Summary Cards -->
+  @if (weeklySummary?.totalOnceAWeekTasks > 0 || monthlySummary?.totalOnceAMonthTasks > 0) {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <!-- Weekly Summary -->
+      @if (weeklySummary?.totalOnceAWeekTasks > 0) {
+        <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-white font-semibold text-sm">📅 This Week</h3>
+            <span class="text-xs text-slate-400">
+              {{ weeklySummary.completedThisWeek }}/{{ weeklySummary.totalOnceAWeekTasks }} done
+            </span>
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-2 mb-3">
+            <div
+              class="h-2 rounded-full transition-all"
+              [class.bg-green-500]="weeklySummary.completionRate === 100"
+              [class.bg-sky-500]="weeklySummary.completionRate < 100"
+              [style.width.%]="weeklySummary.completionRate"
+            ></div>
+          </div>
+          @for (task of weeklySummary.tasks; track task.taskId) {
+            <div class="flex items-center justify-between py-1">
+              <span
+                class="text-sm truncate flex-1"
+                [class.text-green-400]="task.completedThisWeek"
+                [class.text-slate-300]="!task.completedThisWeek"
+              >
+                {{ task.completedThisWeek ? '✓' : '○' }} {{ task.title }}
+              </span>
+              @if (task.completedThisWeek) {
+                <span class="text-xs text-slate-500 ml-2 flex-shrink-0">
+                  {{ task.completedOn | date: 'EEE d' }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Monthly Summary -->
+      @if (monthlySummary?.totalOnceAMonthTasks > 0) {
+        <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-white font-semibold text-sm">🗓️ This Month</h3>
+            <span class="text-xs text-slate-400">
+              {{ monthlySummary.completedThisMonth }}/{{ monthlySummary.totalOnceAMonthTasks }} done
+            </span>
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-2 mb-3">
+            <div
+              class="h-2 rounded-full transition-all"
+              [class.bg-green-500]="monthlySummary.completionRate === 100"
+              [class.bg-sky-500]="monthlySummary.completionRate < 100"
+              [style.width.%]="monthlySummary.completionRate"
+            ></div>
+          </div>
+          @for (task of monthlySummary.tasks; track task.taskId) {
+            <div class="flex items-center justify-between py-1">
+              <span
+                class="text-sm truncate flex-1"
+                [class.text-green-400]="task.completedThisMonth"
+                [class.text-slate-300]="!task.completedThisMonth"
+              >
+                {{ task.completedThisMonth ? '✓' : '○' }} {{ task.title }}
+              </span>
+              @if (task.completedThisMonth) {
+                <span class="text-xs text-slate-500 ml-2 flex-shrink-0">
+                  {{ task.completedOn | date: 'MMM d' }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
 </div>
