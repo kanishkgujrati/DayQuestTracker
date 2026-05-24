@@ -1,5 +1,6 @@
 ﻿using DayQuestTracker.Application.Common.Interfaces;
 using DayQuestTracker.Application.Common.Models;
+using DayQuestTracker.Domain.Entities;
 using DayQuestTracker.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,48 +21,98 @@ namespace DayQuestTracker.Application.Features.HabitTasks.Queries
         public async Task<Result<List<DailyTaskViewDto>>> Handle(GetDailyTaskViewQuery request,CancellationToken cancellationToken)
         {
             // Convert date to 0=Mon, 6=Sun format
-            var dayOfWeek = (int)request.Date.DayOfWeek == 0
-                ? 6
-                : (int)request.Date.DayOfWeek - 1;
+            var dayOfWeek = (int)request.Date.DayOfWeek == 0 ? 6 : (int)request.Date.DayOfWeek - 1;
 
-            // Fetch all active tasks scheduled for this day
-            var tasks = await _context.Tasks.AsNoTracking()
+            // Get Monday and Sunday of requested date's week
+            var dayOfWeekRaw = (int)request.Date.DayOfWeek;
+            var daysFromMonday = dayOfWeekRaw == 0 ? 6 : dayOfWeekRaw - 1;
+            var monday = request.Date.AddDays(-daysFromMonday);
+            var sunday = monday.AddDays(6);
+
+            // Get first and last day of requested date's month
+            var firstOfMonth = new DateOnly(request.Date.Year, request.Date.Month, 1);
+            var lastOfMonth = new DateOnly(
+                request.Date.Year,
+                request.Date.Month,
+                DateTime.DaysInMonth(request.Date.Year, request.Date.Month));
+
+            // Fetch all active tasks for this user
+            var allTasks = await _context.Tasks
+                .Include(t => t.Category)
+                .Include(t => t.TaskSchedules)
                 .Where(t => t.UserId == request.UserId &&
                             t.DeletedAt == null &&
-                            (t.FrequencyType == FrequencyType.Daily ||
-                             t.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek)))
-                .OrderBy(t => t.Category.Name)
-                .ThenBy(t => t.Title)
+                            DateOnly.FromDateTime(t.CreatedAt) <= request.Date)
                 .ToListAsync(cancellationToken);
 
-            if (!tasks.Any())
+            // Filter tasks that should appear on this date
+            var tasksForDay = allTasks.Where(task =>
+                task.FrequencyType == FrequencyType.Daily ||
+                (task.FrequencyType == FrequencyType.Weekly &&
+                 task.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek)) ||
+                (task.FrequencyType == FrequencyType.Custom &&
+                 task.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek)) ||
+                task.FrequencyType == FrequencyType.OnceAWeek ||
+                task.FrequencyType == FrequencyType.OnceAMonth
+            ).ToList();
+
+            if (!tasksForDay.Any())
                 return Result<List<DailyTaskViewDto>>.Success(new List<DailyTaskViewDto>());
 
-            var taskIds = tasks.Select(t => t.Id).ToList();
+            var taskIds = tasksForDay.Select(t => t.Id).ToList();
 
-            // Fetch completions for these tasks on this date — single query
+            // Fetch completions for these tasks
             var completions = await _context.TaskCompletions
                 .Where(tc => tc.UserId == request.UserId &&
-                             taskIds.Contains(tc.HabitTaskId) &&
-                             tc.CompletionDate == request.Date)
+                             taskIds.Contains(tc.HabitTaskId))
                 .ToListAsync(cancellationToken);
 
-            // Fetch streaks for these tasks
             var streaks = await _context.UserTaskStreaks
                 .Where(s => s.UserId == request.UserId &&
                             taskIds.Contains(s.TaskId))
                 .ToListAsync(cancellationToken);
 
-            // Combine into daily view
-            var result = tasks.Select(task =>
+            var result = new List<DailyTaskViewDto>();
+
+            foreach (var task in tasksForDay.OrderBy(t => t.Category?.Name).ThenBy(t => t.Title))
             {
-                var completion = completions
-                    .FirstOrDefault(c => c.HabitTaskId == task.Id);
+                HabitTaskCompletion? completion = null;
 
-                var streak = streaks
-                    .FirstOrDefault(s => s.TaskId == task.Id);
+                if (task.FrequencyType == FrequencyType.OnceAWeek)
+                {
+                    // Find completion for this Mon-Sun week
+                    completion = completions.FirstOrDefault(c =>
+                        c.HabitTaskId == task.Id &&
+                        c.CompletionDate >= monday &&
+                        c.CompletionDate <= sunday &&
+                        c.Status == CompletionStatus.Completed);
 
-                return new DailyTaskViewDto
+                    // Skip if already completed this week — do not show on dashboard
+                    if (completion is not null) continue;
+                }
+                else if (task.FrequencyType == FrequencyType.OnceAMonth)
+                {
+                    // Find completion for this calendar month
+                    completion = completions.FirstOrDefault(c =>
+                        c.HabitTaskId == task.Id &&
+                        c.CompletionDate >= firstOfMonth &&
+                        c.CompletionDate <= lastOfMonth &&
+                        c.Status == CompletionStatus.Completed);
+
+                    // Skip if already completed this month — do not show on dashboard
+                    if (completion is not null) continue;
+                }
+                else
+                {
+                    // Daily, Weekly, Custom — find completion for this specific date
+                    completion = completions.FirstOrDefault(c =>
+                        c.HabitTaskId == task.Id &&
+                        c.CompletionDate == request.Date);
+                }
+
+                var streak = streaks.FirstOrDefault(s => s.TaskId == task.Id);
+
+                result.Add(new DailyTaskViewDto
                 {
                     TaskId = task.Id,
                     Title = task.Title,
@@ -75,10 +126,11 @@ namespace DayQuestTracker.Application.Features.HabitTasks.Queries
                     Status = completion?.Status,
                     Notes = completion?.Notes,
                     CurrentStreak = streak?.CurrentStreak ?? 0
-                };
-            }).ToList();
+                });
+            }
 
             return Result<List<DailyTaskViewDto>>.Success(result);
         }
+
     }
 }

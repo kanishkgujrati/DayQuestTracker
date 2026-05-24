@@ -180,5 +180,68 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 dailyScore.UpdatedAt = DateTime.UtcNow;
             }
         }
+
+        private async Task<HabitTaskCompletion?> GetExistingCompletion(Guid taskId, Guid userId, DateOnly date, FrequencyType frequencyType, CancellationToken cancellationToken)
+        {
+            if (frequencyType == FrequencyType.OnceAWeek)
+            {
+                // Check if completed any day this Mon-Sun week
+                var monday = GetMondayOfWeek(date);
+                var sunday = monday.AddDays(6);
+
+                return await _context.TaskCompletions
+                    .FirstOrDefaultAsync(tc =>
+                        tc.HabitTaskId == taskId &&
+                        tc.UserId == userId &&
+                        tc.CompletionDate >= monday &&
+                        tc.CompletionDate <= sunday &&
+                        tc.Status == CompletionStatus.Completed,
+                        cancellationToken);
+            }
+
+            if (frequencyType == FrequencyType.OnceAMonth)
+            {
+                // Check if completed any day this calendar month
+                var firstOfMonth = new DateOnly(date.Year, date.Month, 1);
+                var lastOfMonth = new DateOnly(
+                    date.Year,
+                    date.Month,
+                    DateTime.DaysInMonth(date.Year, date.Month));
+
+                return await _context.TaskCompletions
+                    .FirstOrDefaultAsync(tc =>
+                        tc.HabitTaskId == taskId &&
+                        tc.UserId == userId &&
+                        tc.CompletionDate >= firstOfMonth &&
+                        tc.CompletionDate <= lastOfMonth &&
+                        tc.Status == CompletionStatus.Completed,
+                        cancellationToken);
+            }
+
+            // Daily, Weekly, Custom — one per date
+            return await _context.TaskCompletions
+                .FirstOrDefaultAsync(tc =>
+                    tc.HabitTaskId == taskId &&
+                    tc.UserId == userId &&
+                    tc.CompletionDate == date,
+                    cancellationToken);
+        }
+
+        private static string GetDuplicateMessage(FrequencyType frequencyType) =>
+            frequencyType switch
+            {
+                FrequencyType.OnceAWeek =>
+                    "This task has already been completed this week.",
+                FrequencyType.OnceAMonth =>
+                    "This task has already been completed this month.",
+                _ => "A completion record already exists for this task on this date."
+            };
+
+        private static DateOnly GetMondayOfWeek(DateOnly date)
+        {
+            var dayOfWeek = (int)date.DayOfWeek;
+            var daysFromMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+            return date.AddDays(-daysFromMonday);
+        }
     }
 }

@@ -19,6 +19,8 @@ namespace DayQuestTracker.Domain.Entities
             FrequencyType.Daily => Difficulty * 10 * 2,
             FrequencyType.Weekly => (int)(Difficulty * 10),
             FrequencyType.Custom => (int)(Difficulty * 10 * 1.5),
+            FrequencyType.OnceAWeek => (int)(Difficulty * 10 * 2.0),
+            FrequencyType.OnceAMonth => (int)(Difficulty * 10 * 3.0),
             _ => Difficulty * 10
         };
 
@@ -33,26 +35,70 @@ namespace DayQuestTracker.Domain.Entities
         public List<DateOnly> GetScheduledDates(DateOnly endDate)
         {
             var scheduledDates = new List<DateOnly>();
-
-            // Start from task creation date, not from the beginning of time
             var startDate = DateOnly.FromDateTime(CreatedAt);
-            var current = startDate;
 
-            while (current <= endDate)
+            if (FrequencyType == Enums.FrequencyType.OnceAWeek)
+            {
+                // Return last day (Sunday) of each Mon-Sun week
+                // from task creation to endDate
+                var current = startDate;
+
+                // Move to the Sunday of the first week
+                var daysUntilSunday = (7 - (int)current.DayOfWeek) % 7;
+                if (daysUntilSunday == 0) daysUntilSunday = 7;
+                var firstSunday = current.AddDays(daysUntilSunday);
+
+                var sunday = firstSunday;
+                while (sunday <= endDate)
+                {
+                    scheduledDates.Add(sunday);
+                    sunday = sunday.AddDays(7);
+                }
+
+                return scheduledDates;
+            }
+
+            if (FrequencyType == Enums.FrequencyType.OnceAMonth)
+            {
+                // Return last day of each calendar month
+                // from task creation to endDate
+                var currentMonth = new DateOnly(startDate.Year, startDate.Month, 1);
+
+                while (currentMonth <= endDate)
+                {
+                    var lastDay = new DateOnly(
+                        currentMonth.Year,
+                        currentMonth.Month,
+                        DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month));
+
+                    var effectiveLastDay = lastDay <= endDate ? lastDay : endDate;
+                    scheduledDates.Add(effectiveLastDay);
+
+                    currentMonth = currentMonth.AddMonths(1);
+                }
+
+                return scheduledDates;
+            }
+
+            // Daily, Weekly, Custom — existing logic
+            var day = startDate;
+            while (day <= endDate)
             {
                 if (FrequencyType == Enums.FrequencyType.Daily)
                 {
-                    scheduledDates.Add(current);
+                    scheduledDates.Add(day);
                 }
                 else
                 {
-                    var dayOfWeek = (int)current.DayOfWeek == 0 ? 6 : (int)current.DayOfWeek - 1;
+                    var dayOfWeek = (int)day.DayOfWeek == 0
+                        ? 6
+                        : (int)day.DayOfWeek - 1;
 
                     if (TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
-                        scheduledDates.Add(current);
+                        scheduledDates.Add(day);
                 }
 
-                current = current.AddDays(1);
+                day = day.AddDays(1);
             }
 
             return scheduledDates;
