@@ -40,6 +40,8 @@ export class TasksComponent implements OnInit {
   deletingId: string | null = null;
   taskForm!: FormGroup;
 
+  categories: Category[] = [];
+
   preselectedCategoryId: string | null = null;
   preselectedCategoryName: string | null = null;
   selectedCategoryName: string | null = null;
@@ -73,6 +75,10 @@ export class TasksComponent implements OnInit {
     this.store.dispatch(loadCategories());
     this.initForm();
 
+    this.categories$.subscribe((categories) => {
+      this.categories = categories;
+    });
+
     this.route.queryParams.subscribe((params) => {
       if (params['categoryId']) {
         this.preselectedCategoryId = params['categoryId'];
@@ -83,11 +89,9 @@ export class TasksComponent implements OnInit {
     });
 
     this.taskForm.get('categoryId')?.valueChanges.subscribe((categoryId) => {
-      this.categories$.subscribe((categories) => {
-        const selected = categories.find((c) => c.id === categoryId);
+      const selected = this.categories.find((c) => c.id === categoryId);
 
-        this.selectedCategoryName = selected?.name ?? null;
-      });
+      this.selectedCategoryName = selected?.name ?? null;
     });
   }
 
