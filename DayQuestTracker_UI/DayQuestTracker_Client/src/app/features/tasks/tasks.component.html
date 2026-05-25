@@ -28,6 +28,13 @@
       <h2 class="text-lg font-semibold text-white mb-4">
         {{ editingTask ? 'Edit Task' : 'New Task' }}
       </h2>
+      @if (selectedCategoryName && !editingTask) {
+        <div
+          class="bg-sky-500/10 border border-sky-500/30 text-sky-400 px-3 py-2 rounded-lg text-xs mb-2"
+        >
+          Adding task to <span class="font-semibold">{{ selectedCategoryName }}</span>
+        </div>
+      }
 
       <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="space-y-4">
         <!-- Category -->

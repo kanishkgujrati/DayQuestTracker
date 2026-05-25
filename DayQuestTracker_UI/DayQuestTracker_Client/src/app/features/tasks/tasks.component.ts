@@ -20,6 +20,7 @@ import {
 } from '../../store/tasks/task.selectors';
 import { loadCategories } from '../../store/category/category.actions';
 import { selectAllCategories } from '../../store/category/category.selectors';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-tasks',
@@ -39,6 +40,10 @@ export class TasksComponent implements OnInit {
   deletingId: string | null = null;
   taskForm!: FormGroup;
 
+  preselectedCategoryId: string | null = null;
+  preselectedCategoryName: string | null = null;
+  selectedCategoryName: string | null = null;
+
   FrequencyType = FrequencyType;
 
   dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -54,6 +59,7 @@ export class TasksComponent implements OnInit {
   constructor(
     private store: Store,
     private fb: FormBuilder,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -66,11 +72,28 @@ export class TasksComponent implements OnInit {
     this.store.dispatch(loadTasks({}));
     this.store.dispatch(loadCategories());
     this.initForm();
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['categoryId']) {
+        this.preselectedCategoryId = params['categoryId'];
+        this.preselectedCategoryName = params['categoryName'] ?? '';
+        this.selectedCategoryName = this.preselectedCategoryName;
+        this.onAddNew();
+      }
+    });
+
+    this.taskForm.get('categoryId')?.valueChanges.subscribe((categoryId) => {
+      this.categories$.subscribe((categories) => {
+        const selected = categories.find((c) => c.id === categoryId);
+
+        this.selectedCategoryName = selected?.name ?? null;
+      });
+    });
   }
 
   initForm(task?: HabitTask): void {
     this.taskForm = this.fb.group({
-      categoryId: [task?.categoryId ?? '', Validators.required],
+      categoryId: [task?.categoryId ?? this.preselectedCategoryId ?? '', Validators.required],
       title: [task?.title ?? '', [Validators.required, Validators.maxLength(200)]],
       description: [task?.description ?? ''],
       difficulty: [

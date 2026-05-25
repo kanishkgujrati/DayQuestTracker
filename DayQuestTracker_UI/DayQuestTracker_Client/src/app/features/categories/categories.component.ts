@@ -17,6 +17,7 @@ import {
   selectCategoriesSaving,
   selectCategoryError,
 } from '../../store/category/category.selectors';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-categories',
@@ -83,6 +84,7 @@ export class CategoriesComponent implements OnInit {
   constructor(
     private store: Store,
     private fb: FormBuilder,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -168,5 +170,11 @@ export class CategoriesComponent implements OnInit {
   getIconEmoji(icon: string | null): string {
     if (!icon) return '📁';
     return this.iconEmojis[icon] ?? '📁';
+  }
+
+  onAddTask(category: Category): void {
+    this.router.navigate(['/tasks'], {
+      queryParams: { categoryId: category.id, categoryName: category.name },
+    });
   }
 }
