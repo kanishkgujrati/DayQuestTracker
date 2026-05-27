@@ -109,5 +109,18 @@ namespace DayQuestTracker.WebAPI.Controllers
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
+
+        [HttpGet("history/{date}")]
+        public async Task<IActionResult> GetDayHistory(string date)
+        {
+            if (!DateOnly.TryParse(date, out var parsedDate))
+                return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd." });
+
+            var result = await _mediator.Send(new GetDayHistoryQuery(GetUserId(), parsedDate));
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : BadRequest(new { error = result.Error });
+        }
     }
 }
