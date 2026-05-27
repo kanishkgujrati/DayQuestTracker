@@ -206,6 +206,7 @@ export class HistoryComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
+    const date = this.parseDateSafe(dateStr);
     return new Date(dateStr + 'T00:00:00').toLocaleDateString('en', {
       weekday: 'long',
       year: 'numeric',
