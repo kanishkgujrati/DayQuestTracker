@@ -47,3 +47,34 @@ export interface WeakestHabit {
   missedDays: number;
   consistencyPercent: number;
 }
+
+export enum DayTaskStatus {
+  Completed = 1,
+  Skipped = 2,
+  Missed = 3,
+}
+
+export interface DayHistoryTask {
+  taskId: string;
+  title: string;
+  categoryName: string;
+  categoryColor: string;
+  difficulty: number;
+  xpValue: number;
+  frequencyType: number;
+  status: DayTaskStatus;
+  notes: string | null;
+  xpAwarded: number;
+}
+
+export interface DayHistory {
+  date: string;
+  dayName: string;
+  score: number;
+  totalTasks: number;
+  completedCount: number;
+  skippedCount: number;
+  missedCount: number;
+  xpEarned: number;
+  tasks: DayHistoryTask[];
+}

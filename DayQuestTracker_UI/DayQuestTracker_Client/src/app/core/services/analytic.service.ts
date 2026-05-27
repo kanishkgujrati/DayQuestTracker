@@ -72,4 +72,8 @@ export class AnalyticsService {
   getMonthlySummary(year: number, month: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/monthly-summary/${year}/${month}`);
   }
+
+  getDayHistory(date: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/history/${date}`);
+  }
 }
