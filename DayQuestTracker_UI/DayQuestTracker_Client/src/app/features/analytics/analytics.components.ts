@@ -23,6 +23,7 @@ import {
   selectPerfectDays,
   selectTopStreaks,
 } from '../../store/analytics/analytics.selectors';
+import { Router } from '@angular/router';
 
 Chart.register(...registerables);
 
@@ -52,7 +53,10 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   private consistencyChart?: Chart;
   private destroy$ = new Subject<void>();
 
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.consistency$ = this.store.select(selectConsistency);
@@ -123,7 +127,10 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
       data: {
         labels: data.map((d) => {
           const date = new Date(d.date);
-          return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+          return date.toLocaleDateString('en', {
+            month: 'short',
+            day: 'numeric',
+          });
         }),
         datasets: [
           {
@@ -135,15 +142,41 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
             fill: true,
             tension: 0.4,
             pointBackgroundColor: '#0ea5e9',
-            pointRadius: 3,
+            pointRadius: 4,
+            pointHoverRadius: 7, // larger on hover — signals clickability
+            pointHoverBackgroundColor: '#ffffff',
+            pointHoverBorderColor: '#0ea5e9',
+            pointHoverBorderWidth: 2,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        //cursor: 'pointer',
         plugins: {
           legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items[0].dataIndex;
+                return new Date(data[idx].date + 'T00:00:00').toLocaleDateString('en', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                });
+              },
+              label: (item) => {
+                const idx = item.dataIndex;
+                return [
+                  ` Daily Score: ${data[idx].score}%`,
+                  ` XP Earned: ${data[idx].xpEarned}`,
+                  ` Completed: ${data[idx].completedTasks}/${data[idx].totalTasks}`,
+                  ` Click to view details`,
+                ];
+              },
+            },
+          },
         },
         scales: {
           x: {
@@ -159,6 +192,14 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
               callback: (value) => `${value}%`,
             },
           },
+        },
+        onClick: (event, elements) => {
+          if (!elements.length) return;
+          const idx = elements[0].index;
+          const clickedDate = data[idx].date;
+          this.router.navigate(['/history'], {
+            queryParams: { date: clickedDate },
+          });
         },
       },
     });
