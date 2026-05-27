@@ -30,6 +30,7 @@ export class LayoutComponent implements OnInit {
     { path: '/categories', label: 'Categories', icon: '📁' },
     { path: '/tasks', label: 'Tasks', icon: '✅' },
     { path: '/analytics', label: 'Analytics', icon: '📊' },
+    { path: '/history', label: 'Day History', icon: '📅' },
   ];
 
   constructor(private store: Store) {}

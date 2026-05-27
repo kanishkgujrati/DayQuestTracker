@@ -42,6 +42,11 @@ export const routes: Routes = [
           import('./features/profile/profile.routes').then((m) => m.profileRoutes),
       },
       {
+        path: 'history',
+        loadChildren: () =>
+          import('./features/history/history.routes').then((m) => m.historyRoutes),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

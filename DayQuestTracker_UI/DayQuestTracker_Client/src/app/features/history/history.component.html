@@ -1,0 +1,227 @@
+<div class="p-6 max-w-6xl mx-auto">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white">History</h1>
+    <p class="text-slate-400 text-sm mt-1">Browse your past performance day by day</p>
+  </div>
+
+  <div class="flex gap-6">
+    <!-- Left Panel — Week Navigation -->
+    <div class="w-56 flex-shrink-0">
+      <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <!-- Week Navigator -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+          <button
+            (click)="goToPreviousWeek()"
+            class="text-slate-400 hover:text-white transition p-1 rounded"
+          >
+            ‹
+          </button>
+          <span class="text-white text-xs font-medium text-center">
+            {{ getWeekRangeLabel() }}
+          </span>
+          <button
+            (click)="goToNextWeek()"
+            [disabled]="isNextWeekDisabled()"
+            class="text-slate-400 hover:text-white disabled:text-slate-600 disabled:cursor-not-allowed transition p-1 rounded"
+          >
+            ›
+          </button>
+        </div>
+
+        <!-- Day List -->
+        <div class="p-2">
+          @for (day of weekDays; track day.date) {
+            <button
+              (click)="onDaySelect(day)"
+              [disabled]="day.isFuture"
+              class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition mb-1 text-left"
+              [class.bg-sky-600]="selectedDate === day.date"
+              [class.text-white]="selectedDate === day.date"
+              [class.hover:bg-slate-700]="selectedDate !== day.date"
+              [class.text-slate-300]="selectedDate !== day.date && !day.isFuture"
+              [class.text-slate-600]="day.isFuture"
+              [class.cursor-not-allowed]="day.isFuture"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium w-7">{{ day.dayName }}</span>
+                <span class="text-sm font-bold">{{ day.dayNumber }}</span>
+                @if (day.isToday) {
+                  <span class="text-xs text-sky-400">Today</span>
+                }
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel — Day Detail -->
+    <div class="flex-1 min-w-0">
+      <!-- Loading -->
+      @if (isLoadingDay) {
+        <div
+          class="bg-slate-800 rounded-xl border border-slate-700 p-8 flex items-center justify-center"
+        >
+          <p class="text-slate-400">Loading...</p>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (error && !isLoadingDay) {
+        <div
+          class="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm"
+        >
+          {{ error }}
+        </div>
+      }
+
+      <!-- Day Detail -->
+      @if (selectedDayHistory && !isLoadingDay) {
+        <!-- Day Header -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-5 mb-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-white">
+                {{ formatDate(selectedDayHistory.date) }}
+              </h2>
+              <p class="text-slate-400 text-sm mt-1">
+                {{ selectedDayHistory.totalTasks }} tasks scheduled
+              </p>
+            </div>
+
+            <!-- Score Badge -->
+            <div class="text-right">
+              <p class="text-3xl font-bold" [class]="getScoreColor(selectedDayHistory.score)">
+                {{ selectedDayHistory.score }}%
+              </p>
+              <p class="text-slate-400 text-xs mt-1">
+                +{{ selectedDayHistory.xpEarned }} XP earned
+              </p>
+            </div>
+          </div>
+
+          <!-- Score Bar -->
+          <div class="w-full bg-slate-700 rounded-full h-2 mt-4">
+            <div
+              class="h-2 rounded-full transition-all duration-500"
+              [class.bg-green-500]="selectedDayHistory.score === 100"
+              [class.bg-yellow-500]="
+                selectedDayHistory.score >= 50 && selectedDayHistory.score < 100
+              "
+              [class.bg-red-500]="selectedDayHistory.score < 50"
+              [style.width.%]="selectedDayHistory.score"
+            ></div>
+          </div>
+
+          <!-- Summary Pills -->
+          <div class="flex gap-3 mt-4">
+            <span
+              class="bg-green-500/10 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-medium"
+            >
+              ✓ {{ selectedDayHistory.completedCount }} Completed
+            </span>
+            @if (selectedDayHistory.skippedCount > 0) {
+              <span
+                class="bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs font-medium"
+              >
+                ✗ {{ selectedDayHistory.skippedCount }} Skipped
+              </span>
+            }
+            @if (selectedDayHistory.missedCount > 0) {
+              <span
+                class="bg-slate-700 text-slate-400 border border-slate-600 px-3 py-1 rounded-full text-xs font-medium"
+              >
+                — {{ selectedDayHistory.missedCount }} Missed
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- No Tasks -->
+        @if (!selectedDayHistory.totalTasks) {
+          <div class="bg-slate-800 rounded-xl border border-slate-700 p-8 text-center">
+            <p class="text-slate-400">No tasks were scheduled for this day.</p>
+          </div>
+        }
+
+        <!-- Task List -->
+        @if (selectedDayHistory.totalTasks > 0) {
+          <div class="space-y-3">
+            @for (task of selectedDayHistory.tasks; track task.taskId) {
+              <div class="rounded-xl p-4 border transition" [class]="getStatusBg(task.status)">
+                <div class="flex items-center gap-4">
+                  <!-- Status Icon -->
+                  <div
+                    class="w-9 h-9 rounded-full border-2 flex items-center justify-center flex-shrink-0 font-bold text-sm"
+                    [class.border-green-500]="task.status === DayTaskStatus.Completed"
+                    [class.bg-green-500]="task.status === DayTaskStatus.Completed"
+                    [class.text-white]="task.status === DayTaskStatus.Completed"
+                    [class.border-red-500]="task.status === DayTaskStatus.Skipped"
+                    [class.text-red-400]="task.status === DayTaskStatus.Skipped"
+                    [class.border-slate-600]="task.status === DayTaskStatus.Missed"
+                    [class.text-slate-500]="task.status === DayTaskStatus.Missed"
+                  >
+                    {{ getStatusIcon(task.status) }}
+                  </div>
+
+                  <!-- Task Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-0.5">
+                      <span
+                        class="w-2 h-2 rounded-full flex-shrink-0"
+                        [style.background-color]="task.categoryColor"
+                      >
+                      </span>
+                      <span class="text-slate-400 text-xs">
+                        {{ task.categoryName }}
+                      </span>
+                    </div>
+                    <p
+                      class="font-medium"
+                      [class.text-white]="task.status !== DayTaskStatus.Missed"
+                      [class.text-slate-500]="task.status === DayTaskStatus.Missed"
+                      [class.line-through]="task.status === DayTaskStatus.Skipped"
+                    >
+                      {{ task.title }}
+                    </p>
+                    <div class="flex items-center gap-3 mt-1">
+                      <span class="text-xs text-slate-500">
+                        {{ getDifficultyStars(task.difficulty) }}
+                      </span>
+                      @if (task.status === DayTaskStatus.Completed) {
+                        <span class="text-xs text-yellow-400 font-medium">
+                          +{{ task.xpAwarded }} XP
+                        </span>
+                      } @else {
+                        <span class="text-xs text-slate-600">
+                          {{ task.xpValue }} XP (not earned)
+                        </span>
+                      }
+                    </div>
+                    @if (task.notes) {
+                      <p class="text-slate-400 text-xs mt-1 italic">"{{ task.notes }}"</p>
+                    }
+                  </div>
+
+                  <!-- Status Label -->
+                  <span
+                    class="text-xs font-medium flex-shrink-0 px-2 py-1 rounded-lg"
+                    [class.bg-green-500/10]="task.status === DayTaskStatus.Completed"
+                    [class.text-green-400]="task.status === DayTaskStatus.Completed"
+                    [class.bg-red-500/10]="task.status === DayTaskStatus.Skipped"
+                    [class.text-red-400]="task.status === DayTaskStatus.Skipped"
+                    [class.bg-slate-700]="task.status === DayTaskStatus.Missed"
+                    [class.text-slate-500]="task.status === DayTaskStatus.Missed"
+                  >
+                    {{ getStatusLabel(task.status) }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
