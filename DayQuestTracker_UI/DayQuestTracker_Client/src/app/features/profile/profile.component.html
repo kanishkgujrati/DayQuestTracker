@@ -80,10 +80,7 @@
       <div class="mt-4">
         <div class="flex justify-between text-xs text-slate-400 mb-1">
           <span>{{ profile.totalXP }} XP</span>
-          <span
-            >{{ getXPToNextLevel(profile.totalXP) }} XP to Level
-            {{ (profile.level ?? 0) + 1 }}</span
-          >
+          <span>{{ getXPToNextLevel(profile.totalXP) }} XP to Level {{ profile.level + 1 }}</span>
         </div>
         <div class="w-full bg-slate-700 rounded-full h-2">
           <div
