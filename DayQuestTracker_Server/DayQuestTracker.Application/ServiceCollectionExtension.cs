@@ -2,6 +2,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using DayQuestTracker.Application.Common.Services;
 
 namespace DayQuestTracker.Application
 {
@@ -18,6 +19,8 @@ namespace DayQuestTracker.Application
             services.AddTransient(
                 typeof(IPipelineBehavior<,>),
                 typeof(ValidationBehavior<,>));
+
+            services.AddScoped<DailyScoreService>();
 
 
             return services;

@@ -63,6 +63,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                     .Where(t => t.CategoryId == category.Id)
                     .ToList();
 
+                // No tasks — return with explicit flag
                 if (!categoryTasks.Any())
                     return new CategoryPerformanceDto
                     {
@@ -72,10 +73,10 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                         TotalTasks = 0,
                         AverageConsistency = 0,
                         TotalXPEarned = 0,
-                        BestStreak = 0
+                        BestStreak = 0,
+                        HasTasks = false
                     };
 
-                // Calculate consistency for each task in category
                 var consistencies = categoryTasks
                     .Select(task => ConsistencyCalculator.Calculate(
                         task,
@@ -91,8 +92,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                 var categoryTaskIds = categoryTasks.Select(t => t.Id).ToList();
 
                 var totalXP = xpEvents
-                    .Where(x => x.CategoryId == category.Id &&
-                                x.XPAmount > 0)
+                    .Where(x => x.CategoryId == category.Id && x.XPAmount > 0)
                     .Sum(x => x.XPAmount);
 
                 var bestStreak = streaks
@@ -107,10 +107,12 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                     TotalTasks = categoryTasks.Count,
                     AverageConsistency = avgConsistency,
                     TotalXPEarned = totalXP,
-                    BestStreak = bestStreak
+                    BestStreak = bestStreak,
+                    HasTasks = true
                 };
             })
-            .OrderByDescending(c => c.AverageConsistency)
+            .OrderByDescending(c => c.HasTasks)
+            .ThenByDescending(c => c.AverageConsistency)
             .ToList();
 
             return Result<List<CategoryPerformanceDto>>.Success(result);

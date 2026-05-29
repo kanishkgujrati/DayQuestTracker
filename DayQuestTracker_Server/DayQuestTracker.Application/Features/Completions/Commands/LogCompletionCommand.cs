@@ -13,10 +13,12 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
     public class LogCompletionCommandHandler : IRequestHandler<LogCompletionCommand, Result<TaskCompletionDto>>
     {
         private readonly ITrackerDbContext _context;
+        private readonly DailyScoreService _dailyScoreService;
 
-        public LogCompletionCommandHandler(ITrackerDbContext context)
+        public LogCompletionCommandHandler(ITrackerDbContext context, DailyScoreService dailyScoreService)
         {
             _context = context;
+            _dailyScoreService = dailyScoreService;
         }
         public async Task<Result<TaskCompletionDto>> Handle(LogCompletionCommand request, CancellationToken cancellationToken)
         {
@@ -102,10 +104,10 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
 
             if (streak is not null)
             {
-                StreakCalculator.Recalculate(streak,task,allCompletedDates,request.Status);
+                StreakCalculator.Recalculate(streak, task, allCompletedDates, request.Status);
             }
 
-            await UpsertDailyScoreAsync(request.UserId,request.CompletionDate,cancellationToken);
+            await _dailyScoreService.UpsertAsync(request.UserId,request.CompletionDate,cancellationToken);
 
             // Second save — persist streak and daily score updates
             await _context.SaveChangesAsync(cancellationToken);
@@ -122,63 +124,6 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 XPAwarded = xpAwarded,
                 CreatedAt = completion.CreatedAt
             });
-        }
-
-        private async Task UpsertDailyScoreAsync(Guid userId, DateOnly date, CancellationToken cancellationToken)
-        {
-            // Get all completions for user on this date
-            var completionsForDay = await _context.TaskCompletions
-                .Where(tc => tc.UserId == userId && tc.CompletionDate == date)
-                .ToListAsync(cancellationToken);
-
-            // Count active tasks scheduled for this day
-            var dayOfWeek = (int)date.DayOfWeek == 0 ? 6 : (int)date.DayOfWeek - 1; // Convert to 0=Mon, 6=Sun
-
-            var totalTasks = await _context.Tasks
-                .Where(t => t.UserId == userId && DateOnly.FromDateTime(t.CreatedAt) <= date && (t.DeletedAt == null || DateOnly.FromDateTime(t.DeletedAt.Value) > date))
-                .Where(t => t.FrequencyType == FrequencyType.Daily ||
-                            t.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
-                .CountAsync(cancellationToken);
-
-            var completedCount = completionsForDay.Count(c => c.Status == CompletionStatus.Completed);
-
-            var xpEarned = await _context.XPEvents
-                .Where(x => x.UserId == userId &&
-                            x.TaskCompletionId != null &&
-                            _context.TaskCompletions.Any(tc => tc.Id == x.TaskCompletionId && tc.CompletionDate == date))
-                .SumAsync(x => x.XPAmount, cancellationToken);
-            xpEarned = Math.Max(0, xpEarned);
-
-            var score = totalTasks > 0
-                ? (int)Math.Round((double)completedCount / totalTasks * 100)
-                : 0;
-
-            // Upsert — update if exists, insert if not
-            var dailyScore = await _context.DailyScores
-                .FirstOrDefaultAsync(ds => ds.UserId == userId &&
-                                           ds.Date == date,
-                                     cancellationToken);
-
-            if (dailyScore is null)
-            {
-                _context.DailyScores.Add(new DailyScore
-                {
-                    UserId = userId,
-                    Date = date,
-                    Score = score,
-                    CompletedTasks = completedCount,
-                    TotalTasks = totalTasks,
-                    XPEarned = xpEarned
-                });
-            }
-            else
-            {
-                dailyScore.Score = score;
-                dailyScore.CompletedTasks = completedCount;
-                dailyScore.TotalTasks = totalTasks;
-                dailyScore.XPEarned = xpEarned;
-                dailyScore.UpdatedAt = DateTime.UtcNow;
-            }
         }
 
         private async Task<HabitTaskCompletion?> GetExistingCompletion(Guid taskId, Guid userId, DateOnly date, FrequencyType frequencyType, CancellationToken cancellationToken)

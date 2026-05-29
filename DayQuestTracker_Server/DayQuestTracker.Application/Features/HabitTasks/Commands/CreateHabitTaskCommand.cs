@@ -1,5 +1,6 @@
 ﻿using DayQuestTracker.Application.Common.Interfaces;
 using DayQuestTracker.Application.Common.Models;
+using DayQuestTracker.Application.Common.Services;
 using DayQuestTracker.Domain.Entities;
 using DayQuestTracker.Domain.Enums;
 using MediatR;
@@ -13,10 +14,12 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
     public class CreateHabitTaskCommandHandler : IRequestHandler<CreateHabitTaskCommand, Result<HabitTaskDto>>
     {
         private readonly ITrackerDbContext _context;
+        private readonly DailyScoreService _dailyScoreService;
 
-        public CreateHabitTaskCommandHandler(ITrackerDbContext context)
+        public CreateHabitTaskCommandHandler(ITrackerDbContext context, DailyScoreService dailyScoreService)
         {
             _context = context;
+            _dailyScoreService = dailyScoreService;
         }
 
         public async Task<Result<HabitTaskDto>> Handle(CreateHabitTaskCommand request,CancellationToken cancellationToken)
@@ -65,6 +68,11 @@ namespace DayQuestTracker.Application.Features.Tasks.Commands
             });
 
             // One single save — all or nothing
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Recalculate today's DailyScore to include the new task
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            await _dailyScoreService.UpsertAsync(request.UserId, today, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result<HabitTaskDto>.Success(new HabitTaskDto

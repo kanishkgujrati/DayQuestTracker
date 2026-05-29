@@ -38,5 +38,6 @@
         public double AverageConsistency { get; set; }
         public int TotalXPEarned { get; set; }
         public int BestStreak { get; set; }
+        public bool HasTasks { get; set; }
     }
 }

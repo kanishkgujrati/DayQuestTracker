@@ -13,10 +13,12 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
     public class UndoCompletionCommandHandler : IRequestHandler<UndoCompletionCommand, Result<bool>>
     {
         private readonly ITrackerDbContext _context;
+        private readonly DailyScoreService _dailyScoreService;
 
-        public UndoCompletionCommandHandler(ITrackerDbContext context)
+        public UndoCompletionCommandHandler(ITrackerDbContext context, DailyScoreService dailyScoreService)
         {
             _context = context;
+            _dailyScoreService = dailyScoreService;
         }
 
         public async Task<Result<bool>> Handle(UndoCompletionCommand request, CancellationToken cancellationToken)
@@ -69,16 +71,10 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
             await _context.SaveChangesAsync(cancellationToken);
 
             // Recalculate streak from scratch
-            await RecalculateStreakAsync(
-                completion.HabitTaskId,
-                request.UserId,
-                cancellationToken);
+            await RecalculateStreakAsync(completion.HabitTaskId,request.UserId,cancellationToken);
 
             // Recalculate DailyScore for that date
-            await RecalculateDailyScoreAsync(
-                request.UserId,
-                completionDate,
-                cancellationToken);
+            await _dailyScoreService.UpsertAsync(request.UserId,completionDate,cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -107,49 +103,6 @@ namespace DayQuestTracker.Application.Features.Completions.Commands
                 .ToListAsync(cancellationToken);
 
             StreakCalculator.Recalculate(streak, task, allCompletedDates);
-        }
-
-        private async Task RecalculateDailyScoreAsync(Guid userId,DateOnly date,CancellationToken cancellationToken)
-        {
-            // Get remaining completions for this day excluding the deleted one
-            var completionsForDay = await _context.TaskCompletions
-                .Where(tc => tc.UserId == userId &&
-                             tc.CompletionDate == date)
-                .ToListAsync(cancellationToken);
-
-            var dayOfWeek = (int)date.DayOfWeek == 0 ? 6 : (int)date.DayOfWeek - 1;
-
-            var totalTasks = await _context.Tasks
-                .Where(t => t.UserId == userId && DateOnly.FromDateTime(t.CreatedAt) <= date && (t.DeletedAt == null || DateOnly.FromDateTime(t.DeletedAt.Value) > date))
-                .Where(t => t.FrequencyType == Domain.Enums.FrequencyType.Daily ||
-                            t.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
-                .CountAsync(cancellationToken);
-
-            var completedCount = completionsForDay.Count(c => c.Status == CompletionStatus.Completed);
-
-            var xpEarned = await _context.XPEvents
-                .Where(x => x.UserId == userId &&
-                            x.TaskCompletionId != null &&
-                            _context.TaskCompletions.Any(tc => tc.Id == x.TaskCompletionId && tc.CompletionDate == date))
-                .SumAsync(x => x.XPAmount, cancellationToken);
-            xpEarned = Math.Max(0, xpEarned);
-
-            var score = totalTasks > 0
-                ? (int)Math.Round((double)completedCount / totalTasks * 100)
-                : 0;
-
-            var dailyScore = await _context.DailyScores
-                .FirstOrDefaultAsync(ds => ds.UserId == userId &&
-                                           ds.Date == date,
-                                     cancellationToken);
-
-            if (dailyScore is null) return;
-
-            dailyScore.Score = score;
-            dailyScore.CompletedTasks = completedCount;
-            dailyScore.TotalTasks = totalTasks;
-            dailyScore.XPEarned = xpEarned;
-            dailyScore.UpdatedAt = DateTime.UtcNow;
         }
     }
 }
