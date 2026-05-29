@@ -35,6 +35,7 @@ export interface CategoryPerformance {
   averageConsistency: number;
   totalXPEarned: number;
   bestStreak: number;
+  hasTasks: boolean;
 }
 
 export interface WeakestHabit {

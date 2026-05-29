@@ -158,36 +158,68 @@
         @if (!categories.length) {
           <p class="text-slate-500 text-sm">No data yet.</p>
         }
-        <div class="space-y-3">
-          @for (cat of categories; track cat.categoryId) {
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <div class="flex items-center gap-2 min-w-0 flex-1">
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <h2 class="text-white font-semibold mb-4">📁 By Category</h2>
+
+          @if (categoryPerformance$ | async; as categories) {
+            @if (!categories.length) {
+              <p class="text-slate-500 text-sm">No categories yet.</p>
+            }
+
+            <div class="space-y-4">
+              @for (cat of categories; track cat.categoryId) {
+                <!-- Category with tasks -->
+                @if (cat.hasTasks) {
+                  <div>
+                    <div class="flex justify-between items-center mb-1">
+                      <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div
+                          class="w-2 h-2 rounded-full flex-shrink-0"
+                          [style.background-color]="cat.color"
+                        ></div>
+                        <p class="text-white text-sm font-medium truncate">
+                          {{ cat.categoryName }}
+                        </p>
+                        <span class="text-slate-600 text-xs flex-shrink-0">
+                          {{ cat.totalTasks }} task{{ cat.totalTasks !== 1 ? 's' : '' }}
+                        </span>
+                      </div>
+                      <span
+                        class="text-xs font-bold ml-2 flex-shrink-0"
+                        [class]="getConsistencyColor(cat.averageConsistency)"
+                      >
+                        {{ cat.averageConsistency }}%
+                      </span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-1.5">
+                      <div
+                        class="h-1.5 rounded-full transition-all"
+                        [class]="getConsistencyBg(cat.averageConsistency)"
+                        [style.width.%]="cat.averageConsistency"
+                      ></div>
+                    </div>
+                    <p class="text-slate-500 text-xs mt-1">
+                      {{ cat.totalXPEarned }} XP • Best streak {{ cat.bestStreak }}d
+                    </p>
+                  </div>
+                }
+
+                <!-- Category with no tasks -->
+                @if (!cat.hasTasks) {
                   <div
-                    class="w-2 h-2 rounded-full flex-shrink-0"
-                    [style.background-color]="cat.color"
-                  ></div>
-                  <p class="text-white text-sm font-medium truncate">
-                    {{ cat.categoryName }}
-                  </p>
-                </div>
-                <span
-                  class="text-xs font-bold ml-2 flex-shrink-0"
-                  [class]="getConsistencyColor(cat.averageConsistency)"
-                >
-                  {{ cat.averageConsistency }}%
-                </span>
-              </div>
-              <div class="w-full bg-slate-700 rounded-full h-1.5">
-                <div
-                  class="h-1.5 rounded-full transition-all"
-                  [class]="getConsistencyBg(cat.averageConsistency)"
-                  [style.width.%]="cat.averageConsistency"
-                ></div>
-              </div>
-              <p class="text-slate-500 text-xs mt-1">
-                {{ cat.totalXPEarned }} XP • Best streak {{ cat.bestStreak }}d
-              </p>
+                    class="flex items-center justify-between py-2 border-b border-slate-700/50 last:border-0"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-2 h-2 rounded-full flex-shrink-0 opacity-40"
+                        [style.background-color]="cat.color"
+                      ></div>
+                      <p class="text-slate-500 text-sm">{{ cat.categoryName }}</p>
+                    </div>
+                    <span class="text-slate-600 text-xs">No tasks added</span>
+                  </div>
+                }
+              }
             </div>
           }
         </div>
