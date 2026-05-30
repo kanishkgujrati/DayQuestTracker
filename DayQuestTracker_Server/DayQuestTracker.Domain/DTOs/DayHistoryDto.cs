@@ -10,6 +10,7 @@
         public int SkippedCount { get; set; }
         public int MissedCount { get; set; }
         public int XPEarned { get; set; }
+        public int TotalAssignedXP { get; set; }
         public List<DayHistoryTaskDto> Tasks { get; set; } = new();
     }
 }

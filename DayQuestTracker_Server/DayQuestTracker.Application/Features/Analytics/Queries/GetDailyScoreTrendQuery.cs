@@ -22,6 +22,11 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                 return Result<List<DailyScoreTrendDto>>
                     .Failure("StartDate cannot be after EndDate.");
 
+            var allTasks = await _context.Tasks
+                .Include(t => t.TaskSchedules)
+                .Where(t => t.UserId == request.UserId && t.DeletedAt == null)
+                .ToListAsync(cancellationToken);
+
             var scores = await _context.DailyScores.AsNoTracking()
                 .Where(ds => ds.UserId == request.UserId &&
                              ds.Date >= request.StartDate &&
@@ -45,14 +50,40 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
             while (current <= request.EndDate)
             {
                 var existing = scores.FirstOrDefault(s => s.Date == current);
-                allDays.Add(existing ?? new DailyScoreTrendDto
-                {
-                    Date = current,
-                    Score = 0,
-                    CompletedTasks = 0,
-                    TotalTasks = 0,
-                    XPEarned = 0
-                });
+                var dayOfWeek = (int)current.DayOfWeek == 0 ? 6 : (int)current.DayOfWeek - 1;
+
+                var tasksForDay = allTasks.Where(t =>
+                    DateOnly.FromDateTime(t.CreatedAt) <= current &&
+                    (t.DeletedAt == null ||
+                     DateOnly.FromDateTime(t.DeletedAt.Value) > current) &&
+                    (t.FrequencyType == Domain.Enums.FrequencyType.Daily ||
+                     t.FrequencyType == Domain.Enums.FrequencyType.OnceAWeek ||
+                     t.FrequencyType == Domain.Enums.FrequencyType.OnceAMonth ||
+                     t.TaskSchedules.Any(s => s.DayOfWeek == dayOfWeek))
+                ).ToList();
+
+                var totalAssignedXP = tasksForDay.Sum(t => t.XPValue);
+
+
+                allDays.Add(existing != null
+                    ? new DailyScoreTrendDto
+                    {
+                        Date = existing.Date,
+                        Score = existing.Score,
+                        CompletedTasks = existing.CompletedTasks,
+                        TotalTasks = existing.TotalTasks,
+                        XPEarned = existing.XPEarned,
+                        TotalAssignedXP = totalAssignedXP
+                    }
+                    : new DailyScoreTrendDto
+                    {
+                        Date = current,
+                        Score = 0,
+                        CompletedTasks = 0,
+                        TotalTasks = 0,
+                        XPEarned = 0,
+                        TotalAssignedXP = totalAssignedXP
+                    });
                 current = current.AddDays(1);
             }
 

@@ -19,6 +19,7 @@
         public int CompletedTasks { get; set; }
         public int TotalTasks { get; set; }
         public int XPEarned { get; set; }
+        public int TotalAssignedXP { get; set; }
     }
     public class TaskStreakSummaryDto
     {

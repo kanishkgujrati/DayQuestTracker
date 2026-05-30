@@ -177,6 +177,8 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
             var missedCount = historyTasks.Count(t =>
                 t.Status == DayTaskStatus.Missed);
 
+            var totalAssignedXP = historyTasks.Sum(t => t.XPValue);
+
             return Result<DayHistoryDto>.Success(new DayHistoryDto
             {
                 Date = date,
@@ -187,6 +189,7 @@ namespace DayQuestTracker.Application.Features.Analytics.Queries
                 SkippedCount = skippedCount,
                 MissedCount = missedCount,
                 XPEarned = dailyScore?.XPEarned ?? 0,
+                TotalAssignedXP = totalAssignedXP,
                 Tasks = historyTasks
             });
         }
