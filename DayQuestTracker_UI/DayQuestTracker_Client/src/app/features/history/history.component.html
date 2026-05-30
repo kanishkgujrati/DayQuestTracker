@@ -90,14 +90,20 @@
               </p>
             </div>
 
-            <!-- Score Badge -->
+            <!-- Score + XP right aligned -->
             <div class="text-right">
               <p class="text-3xl font-bold" [class]="getScoreColor(selectedDayHistory.score)">
                 {{ selectedDayHistory.score }}%
               </p>
-              <p class="text-slate-400 text-xs mt-1">
-                +{{ selectedDayHistory.xpEarned }} XP earned
-              </p>
+              <!-- XP earned / assigned -->
+              <div class="flex items-baseline justify-end gap-1 mt-1">
+                <span class="text-base font-bold text-yellow-400">
+                  +{{ selectedDayHistory.xpEarned }}
+                </span>
+                <span class="text-xs text-slate-500">
+                  / {{ selectedDayHistory.totalAssignedXP }} XP assigned
+                </span>
+              </div>
             </div>
           </div>
 

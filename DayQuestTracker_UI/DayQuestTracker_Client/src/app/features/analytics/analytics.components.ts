@@ -22,6 +22,7 @@ import {
   selectTotalXPInPeriod,
   selectPerfectDays,
   selectTopStreaks,
+  selectTotalAssignedXPInPeriod,
 } from '../../store/analytics/analytics.selectors';
 import { Router } from '@angular/router';
 
@@ -48,6 +49,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   perfectDays$!: Observable<number>;
   topStreaks$!: Observable<TaskStreakSummary[]>;
 
+  totalAssignedXP$!: Observable<number>;
+
   selectedRange = '30';
   private trendChart?: Chart;
   private consistencyChart?: Chart;
@@ -69,6 +72,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.totalXP$ = this.store.select(selectTotalXPInPeriod);
     this.perfectDays$ = this.store.select(selectPerfectDays);
     this.topStreaks$ = this.store.select(selectTopStreaks);
+    this.totalAssignedXP$ = this.store.select(selectTotalAssignedXPInPeriod);
 
     this.loadData();
   }
@@ -170,7 +174,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
                 const idx = item.dataIndex;
                 return [
                   ` Daily Score: ${data[idx].score}%`,
-                  ` XP Earned: ${data[idx].xpEarned}`,
+                  ` XP Earned: ${data[idx].xpEarned} / ${data[idx].totalAssignedXP}`,
                   ` Completed: ${data[idx].completedTasks}/${data[idx].totalTasks}`,
                   ` Click to view details`,
                 ];

@@ -25,5 +25,21 @@ export const selectDailyProgress = createSelector(selectDailyTasks, (tasks) => {
   const pending = tasks.filter((t) => t.status === null).length;
   const score = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  return { total, completed, skipped, pending, score };
+  // XP calculations
+  const totalAssignedXP = tasks.reduce((sum, t) => sum + t.xpValue, 0);
+  const earnedXP = tasks
+    .filter((t) => t.status === CompletionStatus.Completed)
+    .reduce((sum, t) => sum + t.xpValue, 0);
+  const pendingXP = tasks.filter((t) => t.status === null).reduce((sum, t) => sum + t.xpValue, 0);
+
+  return {
+    total,
+    completed,
+    skipped,
+    pending,
+    score,
+    totalAssignedXP,
+    earnedXP,
+    pendingXP,
+  };
 });

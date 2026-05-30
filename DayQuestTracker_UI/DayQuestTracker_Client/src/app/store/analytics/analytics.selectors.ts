@@ -43,6 +43,10 @@ export const selectTotalXPInPeriod = createSelector(selectDailyTrend, (trend) =>
   trend.reduce((sum, d) => sum + d.xpEarned, 0),
 );
 
+export const selectTotalAssignedXPInPeriod = createSelector(selectDailyTrend, (trend) =>
+  trend.reduce((sum, d) => sum + d.totalAssignedXP, 0),
+);
+
 export const selectPerfectDays = createSelector(
   selectDailyTrend,
   (trend) => trend.filter((d) => d.score === 100).length,

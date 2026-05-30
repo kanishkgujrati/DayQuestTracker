@@ -16,6 +16,7 @@ export interface DailyScoreTrend {
   completedTasks: number;
   totalTasks: number;
   xpEarned: number;
+  totalAssignedXP: number;
 }
 
 export interface TaskStreakSummary {
@@ -77,5 +78,6 @@ export interface DayHistory {
   skippedCount: number;
   missedCount: number;
   xpEarned: number;
+  totalAssignedXP: number;
   tasks: DayHistoryTask[];
 }
