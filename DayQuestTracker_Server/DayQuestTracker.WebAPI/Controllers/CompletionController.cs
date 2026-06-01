@@ -57,7 +57,19 @@ namespace DayQuestTracker.WebAPI.Controllers
 
             return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
         }
+
+        [HttpPatch("{id}/notes")]
+        public async Task<IActionResult> UpdateNotes(Guid id, [FromBody] UpdateCompletionNotesRequest request)
+        {
+            var result = await _mediator.Send( new UpdateCompletionNotesCommand(id, GetUserId(), request.Notes));
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : BadRequest(new { error = result.Error });
+        }
     }
 
     public record LogCompletionRequest(Guid TaskId,DateOnly CompletionDate,CompletionStatus Status,string? Notes);
+
+    public record UpdateCompletionNotesRequest(string? Notes);
 }
